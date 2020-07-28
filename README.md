@@ -54,6 +54,27 @@ Its' abstraction is very useful, especially when combined with the extra metadat
 To effectively hook into the system, all you need is to `InterfaceMessage#replaceAll` the appropriate keys in `ServerCore/coreFormatting` with what you want the formatting to look like.
 For example, the ConsoleInterface ignores the [begin/end]Formatting keys, whereas the Discord interface uses these to start a `diff` code block for coloring the following text.  
 
+# Usage
+
+To actually use Guinevere, you need the latest Node.JS and the following modules:
+- luxon       (Currently only used for testing timezones)
+- discord.js  (For the Discord bot)
+- socket.io   (For the actual sockets used to connect to the Core)
+- express     (For the HTTP listener server)
+- dotenv      (Global configuration file)
+
+Optionally, make a .env file in the project root with the following keys:
+* GWEN_ENV=[testing/debug/release]
+* GWEN_LANG=[en-GB/cym]
+These are not required, but they will reduce log spam.
+
+Finally, make a json folder in Core, with 2 files:
+* json/discord.json: "token": <DISCORD BOT TOKEN>
+* json/meta.json: "langs": { <LANGUAGE CODE>: { "short": <SHORT LANG CODE> } }, "version": <VERSION NUMBER>
+  
+Once this is all done, run `node DiscordEntry.js` in the `Discord` folder to start the bot and Core.
+
 ## Revisions
 
  - 28/07/20 03:40 First Revision 
+ - 28/07/20 20:40 Add Usage Info
