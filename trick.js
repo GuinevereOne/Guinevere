@@ -14,14 +14,10 @@ class Trick {
     constructor(invocation, content) {
         // Can't add an empty trick.
         // Can't overwrite the list or new commands.
-        if(invocation && content &&
-           invocation !== "new" && 
-           invocation !== "list" &&
-           invocation !== "remove") {
+        if(invocation && content) {
             this.trigger = invocation;
             this.message = content;
             this.attachments = [];
-            Tricks.tricks.push(this);
             console.log("[TRCK] Trick " + invocation + " added to internal storage.");
             this.error = false;
         } else {

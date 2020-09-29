@@ -45,6 +45,7 @@ DiscordClient.on("message", message => {
         if(users.includes(message.author.tag)) {
             /** @type {array} */
             const args = content.trim().split(/ +/g);
+            /** @type {string} */
             let command = args.shift().toLowerCase();
 
             let messageToSend = "";
@@ -233,7 +234,7 @@ DiscordClient.on("message", message => {
                     break;
 
                 case "b!":
-
+                    console.log(command.slice(2));
                     bitmapBolb(command.slice(2), message);
                     break;
 
