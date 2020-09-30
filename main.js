@@ -24,7 +24,7 @@ DiscordClient.on("message", message => {
 
     if(message.attachments.size > 0) {
         message.attachments.forEach(attachment => {
-            attachContent += "\n" + attachment.filename + " @ " + attachment.url + "(" + attachment.filesize + ")";
+            attachContent += "\n" + attachment.filename + " @ " + attachment.url + " (" + attachment.filesize + " bytes)";
         });
     }
 
@@ -47,7 +47,7 @@ DiscordClient.on("message", message => {
     if(prefix == "g!" || prefix == "b!" || prefix == "t!") {
         if(Secrets.users.some(name => _.isEqual(name, message.author.username + "#" + message.author.discriminator))) {
             const args = content.trim().split("/ +/g");
-            var command = args.shift().toLowerCase();
+            var command = args.shift();//.toLowerCase();
 
             var messageToSend = "";
             
@@ -98,35 +98,41 @@ DiscordClient.on("message", message => {
                     
                         case "dump":
                             message.channel.startTyping();
-
-                            //var author = targetMessage.author;
-                            messageToSend += "Author: " + message.author.username + "#" + message.author.discriminator;
-                            messageToSend += "\nMessage sent in guild: " + message.guild.name + ", in channel " + message.channel.name;
-                            messageToSend += "\nMessage link: https://discord.com/channels/" + message.guild.id + "/" + message.channel.id + "/" + message.id;
-                            messageToSend += "\nAuthor has roles:\n";
-                        
-
+                            
+                            var roleText = "";
                             message.guild.member(message.author).roles.forEach(role => {
-                                messageToSend += "**" + role.name + "**, id " + role.id + " color " + role.hexColor + "\n"; 
+                                roleText += "**" + role.name + "**, id " + role.id + " color " + role.hexColor + "\n"; 
                             })
-
-                            if(message.attachments.size > 0) {
-                                messageToSend += "\nMessage has attachment(s):\n";
-                                message.attachments.forEach(attachment => {
-                                    messageToSend += attachment.filename + " @ " + attachment.url + "\n";
-                                });
+                            
+                            var contentText = "";
+                            if(attachContent.length > 0) {
+                                contentText = attachContent;
+                            } else {
+                                contentText = "No attachments";
                             }
+           
+                            var embed = new Discord.RichEmbed()
+                                .setTitle("Information dump requested by " + message.author.username)
+                                .addField("Author", message.author.username + "#" + message.author.discriminator)
+                                .addField("Message location", "Guild: " + message.guild.name + "\nChannel: " + message.channel.name)
+                                .addField("Message link", "https://discord.com/channels/" + message.guild.id + "/" + message.channel.id + "/" + message.id)
+                                
+                                .addField("Author's Roles", roleText)
+                                .addField("Message content", contentText)
+                                .setColor("#800080")
+
+                                .setAuthor(DiscordClient.user.username, DiscordClient.user.avatarURL)
+                                .setTimestamp()
+                                .setFooter("Guinevere Debug Utils");
+                                //var author = targetMessage.author;
                         
-                            if(message.cleanContent.length > 0)
-                                messageToSend += "\nMessage content:\n" + message.cleanContent + "\n";
-                            else
-                                messageToSend += "\nNo text in message.\n";
+
                         
-                            console.log(messageToSend);
+                            console.log(embed);
 
                             message.channel.stopTyping();
 
-                            writeMessage(message.channel, messageToSend);
+                            message.channel.sendEmbed(embed);
                             break;
 
                         case "echo":
@@ -143,6 +149,10 @@ DiscordClient.on("message", message => {
 
                             writeMessage(message.channel, feedText);
                             markMessageRead(message, true);
+                            break;
+
+                        case "debug":
+                            writeMessage(message.channel, "``<@" + DiscordClient.user.id + ">``");
                             break;
                             
                         default:
@@ -212,7 +222,7 @@ DiscordClient.on("message", message => {
 
     }
     
-    if(message.content.includes("@" + DiscordClient.user.username)) {
+    if(message.content == "<@" + DiscordClient.user.id + ">") {
         console.log("[INFO] We hath been pung!");
         let homeGuild = DiscordClient.guilds.filter(guild => guild.id === "593555607651614744").array().shift();
         message.react(homeGuild.emojis.find(emoji => emoji.name == "pingsock"));
