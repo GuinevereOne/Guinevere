@@ -1,4 +1,6 @@
-Core/json
-Core/Guinevere.ts
-Gwen-Voice
+json/discord.json
 package-lock.json
+
+
+
+node_modules
