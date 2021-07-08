@@ -6,12 +6,12 @@ const { DiscordInterface } = require("../discord/DiscordInterface");
 
 const { EventEmitter } = require("events");
 const { DateTime } = require("luxon");
-const socketio = require("socket.io");
+const { Server } = require("socket.io");
 const express = require("express");
 
 require("dotenv").config();
 
-const meta = require("./json/meta");
+const meta = require("../../json/meta");
 const app = express()
 
 /** 
@@ -37,7 +37,7 @@ class Core {
     corePort = 2010;
 
     /**
-     * @member { {String, String }[] } registeredInterfaces - The connected clients registered to the Core
+     * @member { [String, String][] } registeredInterfaces - The connected clients registered to the Core
      */
     registeredInterfaces = [];
 
@@ -63,6 +63,9 @@ class Core {
     constructor() {
 
         this.server = { };
+
+        this.expectedInterfaces = 2;
+
         /**
          * 
          * Register a new Interface. 
@@ -72,8 +75,26 @@ class Core {
          * @param  {String} status The reported initialization status.
          */
 
-        this.coreEmitter.on("registerInterface", (identifier, status) => {
-            registeredInterfaces.push( { identifier: identifier, status: status} );
+        this.coreEmitter.on("registerInterface", (name, report) => {
+            this.registeredInterfaces.push([name, report]);
+            if (this.registeredInterfaces.length == this.expectedInterfaces) {
+                let moduleStatus = new InterfaceMessage();
+                moduleStatus.source = "Core";
+                moduleStatus.destination = "console";
+                moduleStatus.title("Module status").beginFormatting();
+
+                for (const iface of this.registeredInterfaces) {
+                    moduleStatus.info(iface[0]);
+                    if (iface[1] == "Okay")
+                        moduleStatus.success(iface[1]);
+                    else
+                        moduleStatus.warn(iface[1]);
+                }
+
+                moduleStatus.endFormatting();
+
+                this.coreEmitter.emit("message", moduleStatus);
+            }
         });
 
         this.discordInterface = new DiscordInterface(this);
@@ -103,36 +124,18 @@ class Core {
             }
 
             setupMessage.success(`Current Language is ${process.env.GWEN_LANG}.`);
-            setupMessage.success(`Current timezone is ${DateTime.local().zoneName}.`).endFormatting();
+            setupMessage.success(`Current timezone is ${DateTime.local().zoneName}.`)
+            process.env.LOGGER ? setupMessage.success("Collaborative Logger Enabled") :
+                                 setupMessage.warn("Collaborative Logger Disabled")
+                                 .endFormatting();
 
-            const Logger = process.env.LOGGER != 'true' ? 'disabled' : 'enabled';
-
-            setupMessage.concat(`Collaborative Logger ${Logger}`);
-            
-
-            await Core.launchListenServer(this.modulesStartupMessage);
-            // await listen / connect
 
             this.startupMessage = setupMessage;
 
             this.coreEmitter.emit("startup", setupMessage);
-
-            let moduleStatus = new InterfaceMessage();
-            moduleStatus.source = "Core";
-            moduleStatus.destination = "console";
-            moduleStatus.title("Module status").beginFormatting();
-
-            for(iface in registeredInterfaces) {
-                moduleStatus.info(iface.identifier);
-                if(iface.status == "Okay")
-                    moduleStatus.success(iface.status);
-                else
-                    moduleStatus.warn(iface.status);
-            }
-
-            moduleStatus.endFormatting();
-
-            this.coreEmitter.emit("message", moduleStatus);
+            
+            // await this.launchListenServer(this.modulesStartupMessage);
+            // await listen / connect
 
             resolve();
         });
@@ -141,9 +144,8 @@ class Core {
     /**
      * Start listening for requests on the Core port.
      * Will start a SocketIO instance, which will manage deferrring tasks.
-     * @param {InterfaceMessage} message 
      */
-    static launchListenServer(message) {
+    launchListenServer() {
         return new Promise((resolve, reject) => {
             this.server = app.listen(this.corePort, (error) => {
                 if(error) {
@@ -151,9 +153,14 @@ class Core {
                     return;
                 }
 
-                message.title("Core").beginFormatting().success(`Started Core server at ${this.corePort}`).endFormatting();
+                let dMesg = new InterfaceMessage();
+                dMesg.destination = "console";
+                dMesg.source = "Core/Server"
+                dMesg.title("Core").beginFormatting().success(`Started Core server at ${this.corePort}`).endFormatting();
 
-                const io = socketio.listen(this.server);
+                this.coreEmitter.emit("message", dMesg);
+
+                const io = Server.listen(this.server);
                 io.on("connection", Core.newConnection);
 
                 resolve();

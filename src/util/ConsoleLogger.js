@@ -1,4 +1,4 @@
-const { InterfaceMessage } = require("./Logger");
+const { InterfaceMessage, coreTranslations } = require("./Logger");
 
 /** @Class Console Output Abstraction Layer */
 class ConsoleInterface {
@@ -6,13 +6,16 @@ class ConsoleInterface {
     constructor(core) {
         core.coreEmitter.on("message", (message) => {
             if(message.destination == "console" || message.destination == "any") {
-                ConsoleInterface.logToConsole(message);
+                let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
+                ConsoleInterface.logToConsole(newMessage);
             }
         });
 
         core.coreEmitter.on("startup", (message) =>  {
             core.coreEmitter.emit("registerInterface", "console", "Okay");
-            ConsoleInterface.logToConsole(message)
+
+            let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
+            ConsoleInterface.logToConsole(newMessage)
         });
     }
 

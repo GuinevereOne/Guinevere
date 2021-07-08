@@ -53,6 +53,7 @@ const coreTranslations = {
      * @member {Object} discordData - A collection of data used when the destination is "discord".
      *                                  Exists as a workaround for the fact that destination can't hold all the information necessary.
      *                                  Can contain:
+     *                                      - destinationGuild;   the string form of the ID of the guild.
      *                                      - destinationChannel; the string form of the ID of the channel.
      *                                      - ping?: 
      *                                          - enabled; a boolean. If true, a mention to the following user should ping. If false, use a non-pinging mention.
@@ -66,11 +67,7 @@ const coreTranslations = {
      * @param {String} string - An optional String to create this new Message out of. Useful for copying messages.
      */
     constructor(string) {
-        this.content = string;
-    }
-
-    constructor() {
-        this.content = "";
+        this.content = string != null ? string : "";
     }
 
     /**

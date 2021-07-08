@@ -1,3 +1,5 @@
-const { Core, Core } = require("./core/ServerCore");
+const { Core } = require("./core/ServerCore");
 
-const Core = new Core();
+const Guinevere = new Core();
+
+Guinevere.init();

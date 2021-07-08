@@ -6,14 +6,18 @@ const { InterfaceMessage, coreTranslations } = require("../util/Logger");
 const meta = require("../../json/discord");
 
 class DiscordInterface {
-    
+
+    transmissionBuffer = [];
+
+    ready = false;
+
     constructor(core) {
         this.gwen = core;
-        this.client = new gateway.Client();
+        this.client = new gateway.Client( {intents: ['GUILDS', 'GUILD_MESSAGES']});
 
-        setupCallbacks(core, client);
+        this.setupCallbacks(this.gwen, this.client);
 
-        client.login(meta.token);
+        this.client.login(meta.token);
     }
 
     /**
@@ -41,7 +45,9 @@ class DiscordInterface {
     setupCallbacks(core, client) {
         
         core.coreEmitter.on("startup", (message) => {
-            this.client.channels.fetch(meta.homeChannel).send(this.recodeMessage(message));
+            let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
+            newMessage.discordData = {destinationGuild: meta.homeGuild, destinationChannel: meta.homeChannel};
+            this.transmissionBuffer.push(newMessage);
         });
 
         core.coreEmitter.on("message", (message) => {
@@ -49,9 +55,12 @@ class DiscordInterface {
                 let newMessage = new InterfaceMessage()
                                     .concat(`New message from ${message.source}, destined for ${message.destination}:`)
                                     .concat(message);
-                
-                let channel = message.discordData != null ? message.discordData.destinationChannel : meta.homeChannel;
+                if(!ready) {
+                    this.transmissionBuffer.push(newMessage);
+                    return;
+                }
 
+                let channel = message.discordData != null ? message.discordData.destinationChannel : meta.homeChannel;
                 this.client.channels.fetch(channel).then(channel => {
                     if(channel instanceof TextChannel)
                       channel.send(newMessage.content);
@@ -59,14 +68,22 @@ class DiscordInterface {
             }
         });
 
-
         client.on("ready", () => {
+            this.ready = true;
             let dMesg = new InterfaceMessage();
 
             dMesg.title("Discord Interface").beginFormatting().success("Ready");
             dMesg.success(`Username: ${client.user.tag}`).endFormatting();
             dMesg.destination = "console";
-            dMesg.source = "discord"
+            dMesg.source = "discord";
+
+            this.transmissionBuffer.forEach(message => 
+                this.client.guilds.fetch(message.discordData.destinationGuild).then(guild =>
+                    guild.channels.fetch(message.discordData.destinationChannel).then(channel => 
+                        channel.send(this.recodeMessage(message))
+                    )
+                )
+            );
             
             this.gwen.coreEmitter.emit("registerInterface", "discord", "Okay");
             this.gwen.coreEmitter.emit("message", dMesg);
@@ -85,7 +102,6 @@ class DiscordInterface {
                 message.reply(recodeMessage(gwen.modulesStartupMessage));
             }
         });
-
     }
 }
 
