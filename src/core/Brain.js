@@ -19,7 +19,7 @@ class Brain {
         const file = `${__dirname}/../data/${this.lang}.json`;
         if(fs.existsSync(file))
             this.data = JSON.parse(fs.readFileSync(file, 'utf8'));
-        
+
         core.coreEmitter.emit("registerInterface", "Okay");
 
         if(process.env.TTS == true)
@@ -28,11 +28,11 @@ class Brain {
     }
 
     static deleteQueryCache(cachePath) {
-        try { 
+        try {
             fs.unlinkSync(cachePath);
         } catch (err) {
             this.core.coreEmitter.emit("error", "Brain", `Error deleting query cache: ${err}`);
-        } 
+        }
     }
 
     talk(rawMessage, endConversation = false) {
@@ -47,16 +47,16 @@ class Brain {
 
         if(property.constructor === [].constructor)
             answer = property[Math.floor(Math.random() * property.length)];
-        else 
+        else
             answer = property;
-        
+
         if(key !== '' && typeof key !== 'undefined')
             answer = answer[key];
-        
+
 
         if(typeof query !== 'undefined' && Object.keys(query).length > 0)
             answer = StringUtils.pnr(answer, query);
-        
+
         return answer;
     }
 
@@ -81,7 +81,7 @@ class Brain {
                         entities: query.entities
                     }
 
-                    try { 
+                    try {
                         fs.writeFileSync(querycache, JSON.stringify(queryObj));
                         this.process = spawn(`pipenv run python bridge/py/main.py ${queryCache}`, { shell: true });
                     } catch (err) {
@@ -136,7 +136,7 @@ class Brain {
                     this.core.coreEmitter.emit("thinking", false);
                     resolve();
                 });
-                
+
                 this.process.stderr.on("data", (data) => {
                     this.talk(`${this.parse("random_module_error", "", { '%module_name%': moduleName, '%package_name%': packageName })}.`);
                     Brain.deleteQueryCache(queryCache);

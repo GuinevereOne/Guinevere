@@ -2,7 +2,7 @@
 /**
  * Recognize and extract Named Entities from a snippet of input text.
  * Uses the NLP.JS library to simplify and minimise code size.
- * 
+ *
  * Guinevere v5 will use a custom library, but v4 is built for lower power hardware.
  */
 
@@ -19,7 +19,7 @@ const { readFileSync } = require('fs')
 
 
 /**
- * @class 
+ * @class
  * @classdesc Provides Named Entity Recognition to queries delivered to the AI Core.
  */
 
@@ -27,9 +27,9 @@ class NER {
 
     /**
      * Called during Core#init
-     * 
+     *
      * @constructor
-     * @param {Core} core 
+     * @param {Core} core
      */
     constructor(core) {
         this.core = core;
@@ -37,8 +37,8 @@ class NER {
         this.container.register('extract-builtin-??', new BuiltinMicrosoft(), true);
         this.ner = new Ner({ container: this.container });
         this.supportedTypes = [ 'regex', 'trim' ]
-        
-        core.coreEmitter.emit("registerInterface", "NER", "Okay");
+
+        core.coreEmitter.emit("registerModule", "NER", "Okay");
     }
 
     /**
@@ -56,7 +56,7 @@ class NER {
 
     /**
      * Perform Named Entity Recognition on the given query
-     * 
+     *
      * @param {*} lang The language in shorthand to be used for extraction
      * @param {*} expressions The path to an expressions.json file.
      * @param {*} object A struct of { entities, {module, action} } used to encode the query. 
@@ -78,7 +78,7 @@ class NER {
             // Make sure the action is valid
             if(typeof expressionsObj[module][action].entities !== 'undefined') {
                 const actionEntities = expressionsObj[module][action].entities;
-                
+
 
                 for (let i = 0; i < actionEntities.length; i++) {
                     const entity = actionEntities[i]
@@ -88,14 +88,14 @@ class NER {
                         promises.push(this.injectRegexEntity(lang, entity))
                     } else if (entity.type === 'trim') {
                         promises.push(this.injectTrimEntity(lang, entity))
-                    }                    
+                    }
                 }
 
                 // Wait for entities to be processed
                 await Promise.all(promises)
 
                 // Collate all the new entities
-                
+
                 const { entities } = await this.ner.process({ locale: lang, text: query });
 
                 // Trim the source and utterance of the new entities
@@ -105,7 +105,7 @@ class NER {
 
                     return entity;
                 })
-                
+
                 if(entities.length > 0) {
                     // Tell the console that we found something
                     NER.logEntities(entities)
@@ -125,8 +125,8 @@ class NER {
 
     /**
      * Add a new entity to the NER Manager with Regex
-     * @param {String} language 
-     * @param {} entity 
+     * @param {String} language
+     * @param {} entity
      */
     injectRegexEntity(language, entity) {
         return new Promise((resolve) => {
@@ -137,8 +137,8 @@ class NER {
 
     /**
      * Add a new entity to the NER Manager with location constraints
-     * @param {String} language 
-     * @param {*} entity 
+     * @param {String} language
+     * @param {*} entity
      */
     injectTrimEntity(language, entity) {
         return new Promise((resolve) => {
@@ -160,4 +160,4 @@ class NER {
     }
 }
 
-module.exports = NERProvider
+module.exports = { NER };

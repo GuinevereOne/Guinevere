@@ -17,7 +17,7 @@ class ConsoleInterface {
         })
 
         core.coreEmitter.on("startup", (message) =>  {
-            core.coreEmitter.emit("registerInterface", "console", "Okay");
+            core.coreEmitter.emit("registerModule", "console", "Okay");
 
             let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
             ConsoleInterface.logToConsole(newMessage)

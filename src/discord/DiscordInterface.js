@@ -33,17 +33,17 @@ class DiscordInterface {
         message.replaceAll(coreTranslations.info, "");
         message.replaceAll(coreTranslations.endFormattingLine, "");
         message.replaceAll(coreTranslations.endFormatting, "\n```\n");
-    
+
         return message;
     }
 
     /**
      * Set up all the Discord and Core message events.
-     * @param {Core} core 
-     * @param {DiscordClient} client 
+     * @param {Core} core
+     * @param {DiscordClient} client
      */
     setupCallbacks(core, client) {
-        
+
         core.coreEmitter.on("startup", (message) => {
             let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
             newMessage.discordData = {destinationGuild: meta.homeGuild, destinationChannel: meta.homeChannel};
@@ -77,15 +77,15 @@ class DiscordInterface {
             dMesg.destination = "console";
             dMesg.source = "discord";
 
-            this.transmissionBuffer.forEach(message => 
+            this.transmissionBuffer.forEach(message =>
                 this.client.guilds.fetch(message.discordData.destinationGuild).then(guild =>
-                    guild.channels.fetch(message.discordData.destinationChannel).then(channel => 
+                    guild.channels.fetch(message.discordData.destinationChannel).then(channel =>
                         channel.send(this.recodeMessage(message))
                     )
                 )
             );
-            
-            this.gwen.coreEmitter.emit("registerInterface", "discord", "Okay");
+
+            this.gwen.coreEmitter.emit("registerModule", "discord", "Okay");
             this.gwen.coreEmitter.emit("message", dMesg);
         });
 
