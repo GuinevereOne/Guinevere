@@ -11,6 +11,11 @@ class ConsoleInterface {
             }
         });
 
+        core.coreEmitter.on("error", (source, message) => {
+            let newMessage = new InterfaceMessage().title(source).beginFormatting().warn(message).endFormatting();
+            ConsoleInterface.logToConsole(newMessage);
+        })
+
         core.coreEmitter.on("startup", (message) =>  {
             core.coreEmitter.emit("registerInterface", "console", "Okay");
 
