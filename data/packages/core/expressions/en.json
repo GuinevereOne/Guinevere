@@ -1,0 +1,18 @@
+{ 
+    "greet": {
+        "run": {
+          "expressions": [
+            "Hi",
+            "Hey",
+            "Sup",
+            "Hello",
+            "Good morning",
+            "Good afternoon",
+            "Good evening",
+            "What's up?",
+            "How are you?",
+            "How are you doing?"
+          ]
+        }
+    }
+}
