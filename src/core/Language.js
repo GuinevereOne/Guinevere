@@ -8,14 +8,12 @@ const { Nlp } = require("@nlpjs/nlp");
 
 const fs = require("fs");
 const { join } = require("path");
-const { request } = require("superagent");
 
 require("dotenv").config();
 
 class NLU {
     constructor (brain) {
         this.brain = brain;
-        this.request = request;
         this.nlp = { };
         this.ner = new NER(brain.emitter);
 
@@ -80,7 +78,7 @@ class NLU {
         };
 
         if(intent == 'None') {
-            const fallback = Nlu.fallback(obj, langs[this.process.env.GWEN_LANG].fallbacks);
+            const fallback = NLU.fallback(obj, langs[process.env.GWEN_LANG].fallbacks);
 
             if(fallback == false) {
                 this.brain.talk(`${this.brain.parse("random_unknown")}`, true);
@@ -99,7 +97,7 @@ class NLU {
 
         let tempMessage = new InterfaceMessage();
         tempMessage.source = "NLU"; tempMessage.destination = "console";
-        tempMessage.title(`NLU`).beginFormatting().success(`NLP query matches module ${moduleName} of package ${domain}`).endFormatting();
+        tempMessage.title(`NLU`).beginFormatting().success(`NLP query matches module ${moduleName} of package ${domain} with confidence ${score}`).endFormatting();
         this.brain.emitter.emit("message", tempMessage);
 
         try {

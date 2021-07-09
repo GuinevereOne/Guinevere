@@ -80,7 +80,6 @@ class NER {
             if(typeof expressionsObj[module][action].entities !== 'undefined') {
                 const actionEntities = expressionsObj[module][action].entities;
 
-                console.log("AAA");
                 for (let i = 0; i < actionEntities.length; i++) {
                     const entity = actionEntities[i]
                     if(!this.supportedTypes.includes(entity.type)) {

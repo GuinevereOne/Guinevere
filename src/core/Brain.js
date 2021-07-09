@@ -86,8 +86,6 @@ class Brain {
                     try {
                         fs.writeFileSync(queryCache, JSON.stringify(queryObj));
                         this.process = spawn(`pipenv run python ${__dirname}/../py/main.py ${queryCache}`, { shell: true });
-                        this.process.stderr.pipe(process.stderr);
-                        this.process.stdout.pipe(process.stdout);
                     } catch (err) {
                         let tempMessage = new InterfaceMessage();
                         tempMessage.source = "Brain"; tempMessage.destination = "console";
