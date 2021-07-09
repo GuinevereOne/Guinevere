@@ -25,6 +25,8 @@ Once the Core is ready, it will emit `"startup"` through `Core.coreEmitter`, pas
 
 From now on, you communicate with `localhost:${Core.corePort}`. Post a `query` event with your text query, and receive either an `answer` event or an `error` event. Query will accept extra data, and this will be passed through all the way to the answer, so that you may serve multiple clients through one connection (eg. a chat bot).
 
+You can also listen for the `"message"` event on the coreEmitter. Filter for messages directed at you (or "any"), and send messages to Discord / the Console by emitting a new Message. Make sure you pass it a valid InterfaceMessage.
+
 
 # Modules
   
@@ -145,3 +147,4 @@ Once this is all done, run `node main.js` in the root folder to start the Core w
  - 28/07/20 03:40 First Revision  
  - 28/07/20 20:40 Add Usage Info
  - 09/07/21 08:50 Revamp for the rewrite
+ - 09/07/21 09:00 Add note about the message event
