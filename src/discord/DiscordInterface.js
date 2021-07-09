@@ -3,7 +3,7 @@ const gateway = require("discord.js");
 const { Core } = require("../core/ServerCore");
 const { InterfaceMessage, coreTranslations } = require("../util/Logger");
 
-const meta = require("../../json/discord");
+const meta = require("../../data/discord");
 
 class DiscordInterface {
 
@@ -52,10 +52,10 @@ class DiscordInterface {
 
         core.coreEmitter.on("message", (message) => {
             if(message.destination == "discord" || message.destination == "any") {
-                let newMessage = new InterfaceMessage()
-                                    .concat(`New message from ${message.source}, destined for ${message.destination}:`)
-                                    .concat(message);
-                if(!ready) {
+                let tempMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message);
+                tempMessage.prepend(`New message from ${message.source} destined for ${message.destination}:`);
+                
+                if(!this.ready) {
                     this.transmissionBuffer.push(newMessage);
                     return;
                 }
@@ -77,13 +77,13 @@ class DiscordInterface {
             dMesg.destination = "console";
             dMesg.source = "discord";
 
-            this.transmissionBuffer.forEach(message =>
+            this.transmissionBuffer.forEach(message => {
                 this.client.guilds.fetch(message.discordData.destinationGuild).then(guild =>
                     guild.channels.fetch(message.discordData.destinationChannel).then(channel =>
                         channel.send(this.recodeMessage(message))
                     )
                 )
-            );
+            });
 
             this.gwen.coreEmitter.emit("registerModule", "discord", "Okay");
             this.gwen.coreEmitter.emit("message", dMesg);

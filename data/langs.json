@@ -1,0 +1,9 @@
+{
+    "langs": {
+        "en-gb": {
+            "short": "en",
+            "confidence_threshold": 0.5,
+            "fallbacks": []
+        }
+    }
+}

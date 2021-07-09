@@ -3,19 +3,23 @@
 const { InterfaceMessage } = require("../util/Logger");
 const { ConsoleInterface } = require("../util/ConsoleLogger");
 const { DiscordInterface } = require("../discord/DiscordInterface");
+const { langs } = require("../../data/langs.json");
+const meta = require("../../data/meta");
+const { infoPlugin } = require("../api/info");
+const { downloadsPlugin } = require("../api/downloads");
+
+const { NLU } = require("./Language");
+const { Brain } = require("./Brain");
 
 const { EventEmitter } = require("events");
 const { DateTime } = require("luxon");
 const socketio = require("socket.io");
+const { join } = require("path");
 
 require("dotenv").config();
 
-const meta = require("../../json/meta");
 const { fastify } = require("fastify");
 const { default: fastifyStatic } = require("fastify-static");
-const { infoPlugin } = require("../api/info");
-const { downloadsPlugin } = require("../api/downloads");
-const app = express()
 
 /**
  *  @classdesc Central Processing Core
@@ -71,7 +75,7 @@ class Core {
 
         // TODO: ASR, STT.
 
-        this.expectedInterfaces = 4;
+        this.expectedInterfaces = 3;
 
         /**
          *
@@ -101,6 +105,18 @@ class Core {
                 moduleStatus.endFormatting();
 
                 this.coreEmitter.emit("message", moduleStatus);
+            } else if (this.registeredInterfaces.length > this.expectedInterfaces) {
+                let moduleStatus = new InterfaceMessage();
+                moduleStatus.source = "Core";
+                moduleStatus.destination = "console";
+                moduleStatus.title(`Module ${name} status`).beginFormatting();
+                if(report != "Okay")
+                    moduleStatus.warn(report);
+                else
+                    moduleStatus.success(report);
+                moduleStatus.endFormatting();
+
+                this.coreEmitter.emit("message", moduleStatus);
             }
         });
 
@@ -124,10 +140,10 @@ class Core {
             setupMessage.title("Initialization").beginFormatting().success(`Running in ${process.env.GWEN_ENV} mode.`);
             setupMessage.success(`Running version ${meta.version}.`);
 
-            if(!Object.keys(meta.langs).includes(process.env.GWEN_LANG)) {
+            if(!Object.keys(langs).includes(process.env.GWEN_LANG)) {
                 process.env.GWEN_LANG = 'en-GB';
 
-                setupMessage.warn(`System language not supported. Defaulting to British English. Supported langs are ${Object.keys(meta.langs)}`);
+                setupMessage.warn(`System language not supported. Defaulting to British English. Supported langs are ${Object.keys(langs)}`);
             }
 
             setupMessage.success(`Current Language is ${process.env.GWEN_LANG}.`);
@@ -168,7 +184,7 @@ class Core {
 
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "Core/Server"; tempMessage.destination = "any";
-            tempMessage.title(`Core/Server`).startFormatting().success(`Listen server returned error: ${err.message}`).endFormatting();
+            tempMessage.title(`Core/Server`).beginFormatting().success(`Listen server returned error: ${err.message}`).endFormatting();
             this.coreEmitter.emit("message", tempMessage);
         }
     }
@@ -179,12 +195,12 @@ class Core {
      */
     async listen() {
         const io = process.env.GWEN_ENV == 'dev' ?
-            socketio(this.httpServer, { cors: { origin: `${process.env.GWEN_HOST}:3000` } }) :
-            socketio(this.httpServer);
+            socketio(this.server, { cors: { origin: `${process.env.GWEN_HOST}:3000` } }) :
+            socketio(this.server);
 
         io.on("connection", this.newConnection);
 
-        await this.fastify.listen(port, '0.0.0.0');
+        await this.fastify.listen(this.corePort, '0.0.0.0');
 
         let dMesg = new InterfaceMessage();
         dMesg.destination = "console";
@@ -203,9 +219,55 @@ class Core {
      * @param {socket} socket
      */
     async newConnection(socket) {
+        
         socket.on("init", async (data) => {
-            
-        })
+            let message = new InterfaceMessage();
+            message.source = "Core/Server/Socket";
+            message.destination = "console";
+
+            message.title("Core/Server/Socket").beginFormatting();
+
+            message.success(`Socket type ${data}, ID: ${socket.id}`);
+
+            if(data == 'hotword')
+                socket.on("hotword-detected", (hotwordData) => {
+                    message.success(`Hotword ${data.hotword} detected.`);
+                    message.endFormatting();
+
+                    this.coreEmitter.emit("message", message);
+                    socket.broadcast.emit("record");
+                });
+            else {
+                let stt = "disabled";
+                let tts = "disabled";
+
+                this.brain = new Brain(socket, langs[process.env.GWEN_LANG].short, this);
+                this.nlu = new NLU(this.brain);
+                
+                // TODO: SST, TTS
+
+                try {
+                    await this.nlu.loadModel(join(__dirname, "../../data/model.nlp"));
+                } catch (err) {
+                    message.warn(`Error raised by NLU: ${err.obj.message}`);
+                }
+                
+                message.endFormatting();
+                this.coreEmitter.emit("message", message);
+
+                socket.on("query", async (queryData) => {
+                    message = new InterfaceMessage();
+                    message.source = "Core/Server/Socket";
+                    message.destination = "console";
+                    message.title(`Socket ${socket.id}`);
+                    message.info(`${queryData.client} emitted ${queryData.value}`);
+
+                    this.coreEmitter.emit("message", message);
+                    this.coreEmitter.emit("thinking", true);
+                    await this.nlu.process(queryData.value);
+                });
+            }
+        });
     }
 }
 

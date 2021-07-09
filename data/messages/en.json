@@ -1,0 +1,34 @@
+{
+    "answers": {
+        "random_low_confidence": [
+            "My confidence in my understanding of your question is too low. Please reword your query.",
+            "I'm not able to determine what you're asking of me.",
+            "Your question is vague. Try again."
+        ],
+        "random_module_error": [
+            "The %module_name% module returned an error. Try again.",
+            "%package_name%'s %module_name% module is having difficulties.",
+            "%module_name% is in need of diagnostics.",
+            "%module_name% was unable to fulfil your query."
+        ],
+
+        "random_error": [
+            "Unexpected system error encountered.",
+            "Red alert. Shields up.",
+            "Internal introspection returned: FAULT.",
+            "Self diagnostics report something bad going on.",
+            "I have a bad feeling about this."
+        ],
+
+        "random_unknown": [
+            "Your query didn't match any known module. I'm not equipped to handle these questions.",
+            "I don't know how to answer that. Consider adding a new module.",
+            "Unable to determine how to process your query. No modules were matched.",
+            "All processing returned low confidence values. I cannot answer your question meaningfully."
+        ],
+
+        "ner_type_not_supported": [
+            "I am unable to process the %entity_type% object in your query. Meaningful processing is impossible."
+        ]
+    }
+}

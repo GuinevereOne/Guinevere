@@ -81,6 +81,14 @@ const coreTranslations = {
     }
 
     /**
+     * Prepend a string to the content.
+     * @param {String} str 
+     */
+    prefix(str) {
+        this.content = str + this.content;
+    }
+
+    /**
      * 
      * Replace all instances of target in content with newStr.
      * Returns the replaced string, this is not in-place.

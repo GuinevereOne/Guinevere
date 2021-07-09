@@ -1,0 +1,40 @@
+{
+  "name": "guinevere",
+  "version": "4.4.5",
+  "description": "The Actually Useful:tm: AI.",
+  "author": "Curle",
+  "license": "MIT",
+  
+  "main": "src/main.js",
+  "dependencies": {
+    "archiver": "^5.3.0",
+    "discord.js": "^13.0.0-dev.28b5ffb.1625702624",
+    "dotenv": "^10.0.0",
+    "events": "^3.3.0",
+    "express": "^4.17.1",
+    "fastify": "^3.18.1",
+    "fastify-static": "^4.2.2",
+    "fastly": "^2.2.1",
+    "luxon": "^1.27.0",
+    "nlpjs": "^0.0.2",
+    "socket.io": "^4.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "train": "node retrain.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guinevereone/Guinevere.git"
+  },
+  "keywords": [
+    "ai",
+    "personal-assistant",
+    "nodejs",
+    "javascript"
+  ],
+  "bugs": {
+    "url": "https://github.com/guinevereone/Guinevere/issues"
+  },
+  "homepage": "https://github.com/guinevereone/Guinevere#readme"
+}

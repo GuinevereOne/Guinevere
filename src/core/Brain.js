@@ -1,13 +1,14 @@
 const { StringUtils } = require("../util/String");
 const { InterfaceMessage } = require("../util/Logger");
 const { Sync } = require("../util/Sync");
+const { langs } = require("../../data/langs.json");
 const fs = require("fs");
 const { spawn } = require("child_process");
 
 
 class Brain {
     constructor (socket, lang, core) {
-        //this.socket = socket;
+        this.socket = socket;
         this.lang = lang;
         this.data = JSON.parse(fs.readFileSync(`${__dirname}/../data/en.json`));
         this.core = core;
@@ -16,7 +17,7 @@ class Brain {
         this.intermediateOutput = { };
         this.output = { };
 
-        const file = `${__dirname}/../data/${this.lang}.json`;
+        const file = `${__dirname}/../../data/messages/${this.lang}.json`;
         if(fs.existsSync(file))
             this.data = JSON.parse(fs.readFileSync(file, 'utf8'));
 
@@ -31,13 +32,13 @@ class Brain {
         try {
             fs.unlinkSync(cachePath);
         } catch (err) {
-            this.core.coreEmitter.emit("error", "Brain", `Error deleting query cache: ${err}`);
+            this.socket.emit("error", "Brain", `Error deleting query cache: ${err}`);
         }
     }
 
     talk(rawMessage, endConversation = false) {
         // TODO: TTS
-        this.core.coreEmitter.emit("answer", rawMessage);
+        this.socket.emit("answer", rawMessage);
     }
 
     parse(category, key, query) {
@@ -67,7 +68,7 @@ class Brain {
 
             if(query.classification.confidence < langs[process.env.GWEN_LANG].confidence_threshold) {
                 this.talk(`${this.parse("random_low_confidence")}.`, true);
-                this.core.coreEmitter.emit("thinking", false);
+                this.socket.emit("thinking", false);
                 resolve();
             } else {
                 if(Object.keys(this.process).length === 0) {
@@ -85,7 +86,7 @@ class Brain {
                         fs.writeFileSync(querycache, JSON.stringify(queryObj));
                         this.process = spawn(`pipenv run python bridge/py/main.py ${queryCache}`, { shell: true });
                     } catch (err) {
-                        this.core.coreEmitter.emit("error", "Brain", `Unable to save query cache file: ${err}`);
+                        this.socket.emit("error", "Brain", `Unable to save query cache file: ${err}`);
                     }
                 }
 
@@ -133,14 +134,14 @@ class Brain {
                     }
 
                     Brain.deleteQueryCache(queryCache);
-                    this.core.coreEmitter.emit("thinking", false);
+                    this.socket.emit("thinking", false);
                     resolve();
                 });
 
                 this.process.stderr.on("data", (data) => {
                     this.talk(`${this.parse("random_module_error", "", { '%module_name%': moduleName, '%package_name%': packageName })}.`);
                     Brain.deleteQueryCache(queryCache);
-                    this.core.coreEmitter.emit("typing", false);
+                    this.socket.emit("thinking", false);
 
                     reject({ type: "error", object: new Error(data) });
                 });

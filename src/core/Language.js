@@ -3,6 +3,7 @@ const { containerBootstrap } = require("@nlpjs/core-loader");
 const { Nlp } = require("@nlpjs/nlp");
 const fs = require("fs");
 const { StringUtils } = require("../util/String");
+const { join } = require("path");
 
 class NLU {
     constructor (brain) {
@@ -93,7 +94,7 @@ class NLU {
         this.core.coreEmitter.emit("message", tempMessage);
 
         try {
-            obj.entities = await this.ner.extractNamedEntities(lang, join(__dirname, "../../packages", obj.classification.package, `data/expressions/${lang}.json`), obj);
+            obj.entities = await this.ner.extractNamedEntities(lang, join(__dirname, "../../data/packages", obj.classification.package, `data/expressions/${lang}.json`), obj);
         } catch (err) {
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "console";

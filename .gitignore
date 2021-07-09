@@ -1,4 +1,5 @@
-json/discord.json
+data/discord.json
+data/meta.json
 package-lock.json
 
 

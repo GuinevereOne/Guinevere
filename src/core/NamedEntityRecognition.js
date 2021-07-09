@@ -14,7 +14,6 @@ const { Core } = require("../core/ServerCore");
 const { InterfaceMessage } = require("../util/Logger");
 const { ConsoleInterface } = require("../util/ConsoleLogger");
 
-const { InterfaceMessage, ConsoleInterface } = require('./ServerCore')
 const { readFileSync } = require('fs')
 
 
