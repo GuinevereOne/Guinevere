@@ -26,7 +26,7 @@ def config(key):
 def output(type, code, message = ""):
     codes.append(code)
 
-    print(dumps({
+    output = {
         "package":  queryobj["package"],
         "module":   queryobj["module"],
         "action":   queryobj["action"],
@@ -39,12 +39,13 @@ def output(type, code, message = ""):
             "text": message,
             "options": config("options")
         }
-    }))
+    }
 
-    if type == "intermediate":
-        stdout.flush()
+    print(dumps(output))
 
-def translate(key, replacements):
+    stdout.flush()
+
+def translate(key, replacements = []):
     output = ""
 
     file = open(dirname + "/../../data/packages/" + queryobj["package"] + "/answers/" + queryobj["lang"] + ".json", "r", encoding = "utf8")

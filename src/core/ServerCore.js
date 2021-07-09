@@ -36,7 +36,7 @@ class Core {
     /**
      * @member {EventEmitter} coreEmitter - The EventEmitter instance for this Core
      */
-    coreEmitter = new EventEmitter();
+    coreEmitter;
 
     /**
      * @member {number} corePort - The port number for this Core to listen on
@@ -72,10 +72,11 @@ class Core {
         this.httpServer = { };
         this.brain = { };
         this.nlu = { };
+        this.coreEmitter = new EventEmitter();
 
         // TODO: ASR, STT.
 
-        this.expectedInterfaces = 3;
+        this.expectedInterfaces = 4;
 
         /**
          *
@@ -179,7 +180,7 @@ class Core {
         this.server = this.fastify.server;
 
         try {
-            await this.listen();
+            await this.listen(this);
         } catch (err) {
 
             let tempMessage = new InterfaceMessage();
@@ -193,12 +194,12 @@ class Core {
      * Start listening for requests on the Core port.
      * Will start a SocketIO instance, which will manage deferrring tasks.
      */
-    async listen() {
+    async listen(core) {
         const io = process.env.GWEN_ENV == 'dev' ?
             socketio(this.server, { cors: { origin: `${process.env.GWEN_HOST}:3000` } }) :
             socketio(this.server);
 
-        io.on("connection", this.newConnection);
+        io.on("connection", (data) => this.newConnection(data, core));
 
         await this.fastify.listen(this.corePort, '0.0.0.0');
 
@@ -218,8 +219,7 @@ class Core {
      * One step closer to parallel processing of requests!
      * @param {socket} socket
      */
-    async newConnection(socket) {
-        
+    async newConnection(socket, core) {
         socket.on("init", async (data) => {
             let message = new InterfaceMessage();
             message.source = "Core/Server/Socket";
@@ -240,12 +240,12 @@ class Core {
             else {
                 let stt = "disabled";
                 let tts = "disabled";
-
-                this.brain = new Brain(socket, langs[process.env.GWEN_LANG].short, this);
+                
+                this.brain = new Brain(socket, langs[process.env.GWEN_LANG].short, core.coreEmitter);
                 this.nlu = new NLU(this.brain);
                 
                 // TODO: SST, TTS
-
+                
                 try {
                     await this.nlu.loadModel(join(__dirname, "../../data/model.nlp"));
                 } catch (err) {
@@ -263,8 +263,8 @@ class Core {
                     message.info(`${queryData.client} emitted ${queryData.value}`);
 
                     this.coreEmitter.emit("message", message);
-                    this.coreEmitter.emit("thinking", true);
-                    await this.nlu.process(queryData.value);
+                    socket.emit("thinking", true, queryData.return);
+                    await this.nlu.process(queryData.value, queryData.return);
                 });
             }
         });

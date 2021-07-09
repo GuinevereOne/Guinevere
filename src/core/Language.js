@@ -1,18 +1,25 @@
 const { NER } = require("./NamedEntityRecognition");
+const { InterfaceMessage } = require("../util/Logger");
+const { StringUtils } = require("../util/String");
+const { langs } = require("../../data/langs.json");
+
 const { containerBootstrap } = require("@nlpjs/core-loader");
 const { Nlp } = require("@nlpjs/nlp");
+
 const fs = require("fs");
-const { StringUtils } = require("../util/String");
 const { join } = require("path");
+const { request } = require("superagent");
+
+require("dotenv").config();
 
 class NLU {
     constructor (brain) {
         this.brain = brain;
         this.request = request;
         this.nlp = { };
-        this.ner = new NER();
+        this.ner = new NER(brain.emitter);
 
-        brain.core.coreEmitter.emit("registerModule", "NLU", "Okay");
+        brain.emitter.emit("registerModule", "NLU", "Okay");
     }
 
     loadModel(model) {
@@ -27,11 +34,12 @@ class NLU {
 
                     let tempMessage = new InterfaceMessage();
                     tempMessage.source = "nlu"; tempMessage.destination = "console";
-                    tempMessage.title("NLU").startFormatting().info("Model loaded successfully").endFormatting();
-                    this.brain.core.coreEmitter.emit("message", tempMessage);
+                    tempMessage.title("NLU").beginFormatting().info("Model loaded successfully").endFormatting();
+                    this.brain.emitter.emit("message", tempMessage);
+                    resolve();
                 } catch (err) {
-                    this.brain.talk(`${this.brain.parse("random_error")}! ${this.brain.parse("errors", "nlu", { "%error%": err.message})}.`);
-                    this.brain.core.coreEmitter.emit("thinking", false);
+                    this.brain.talk(`${this.brain.parse("random_error")}!\n ${this.brain.parse("random_error_detail", "nlu", { "%error%": err.message })}.`);
+                    this.brain.socket.emit("thinking", false);
 
                     reject({ type: "error", obj: err });
                 }
@@ -39,26 +47,27 @@ class NLU {
         })
     }
 
-    async process(query) {
+    async process(query, extraData = null) {
         query = StringUtils.CapitalFirstLetter(query);
 
         if(Object.keys(this.nlp).length == 0) {
             this.brain.talk(`${this.brain.parse("random_error")}`);
-            this.brain.core.coreEmitter.emit("thinking", false);
+            this.brain.socket.emit("thinking", false, extraData);
 
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "any";
-            tempMessage.title(`NLU`).startFormatting().warn("NLP Model missing. Retraining required").endFormatting();
-            this.core.coreEmitter.emit("message", tempMessage);
+            tempMessage.title(`NLU`).beginFormatting().warn("NLP Model missing. Retraining required").endFormatting();
+            this.brain.emitter.emit("message", tempMessage);
 
             return false;
         }
 
-        const lang = langs[this.process.env.GWEN_LANG].short;
+        const lang = langs[process.env.GWEN_LANG].short;
         const result = await this.nlp.process(lang, query);
 
         const { domain, intent, score } = result;
-        const { moduleName, actionName } = intent.split(".");
+        const [ moduleName, actionName ] = intent.split(".");
+
         let obj = {
             query,
             entities: [],
@@ -75,12 +84,12 @@ class NLU {
 
             if(fallback == false) {
                 this.brain.talk(`${this.brain.parse("random_unknown")}`, true);
-                this.brain.core.coreEmitter.emit("thinking", false);
+                this.brain.socket.emit("thinking", false, extraData);
 
                 let tempMessage = new InterfaceMessage();
                 tempMessage.source = "NLU"; tempMessage.destination = "any";
-                tempMessage.title(`NLU`).startFormatting().warn("Unable to handle query.").endFormatting();
-                this.core.coreEmitter.emit("message", tempMessage);
+                tempMessage.title(`NLU`).beginFormatting().warn("Unable to handle query.").endFormatting();
+                this.brain.emitter.emit("message", tempMessage);
 
                 return false;
             }
@@ -90,27 +99,27 @@ class NLU {
 
         let tempMessage = new InterfaceMessage();
         tempMessage.source = "NLU"; tempMessage.destination = "console";
-        tempMessage.title(`NLU`).startFormatting().success(`NLP query matches module ${moduleName} of package ${packageName}`).endFormatting();
-        this.core.coreEmitter.emit("message", tempMessage);
+        tempMessage.title(`NLU`).beginFormatting().success(`NLP query matches module ${moduleName} of package ${domain}`).endFormatting();
+        this.brain.emitter.emit("message", tempMessage);
 
         try {
-            obj.entities = await this.ner.extractNamedEntities(lang, join(__dirname, "../../data/packages", obj.classification.package, `data/expressions/${lang}.json`), obj);
+            obj.entities = await this.ner.extractNamedEntities(lang, join(__dirname, "../../data/packages", obj.classification.package, `/expressions/${lang}.json`), obj);
         } catch (err) {
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "console";
-            tempMessage.title(`NLU`).startFormatting().warn(`NLP entity extraction generated error: ${err}`).endFormatting();
-            this.core.coreEmitter.emit("message", tempMessage);
+            tempMessage.title(`NLU`).beginFormatting().warn(`NLP entity extraction generated error: ${err}`).endFormatting();
+            this.brain.emitter.emit("message", tempMessage);
             this.brain.talk(`${this.brain.parse(err.code, "", err.data)}`);
         }
 
         try {
-            await this.brain.execute(obj);
+            await this.brain.execute(obj, extraData);
         } catch (err) {
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "console";
-            tempMessage.title(`NLU`).startFormatting().warn(`NLP execution generated error: ${err}`).endFormatting();
-            this.core.coreEmitter.emit("message", tempMessage);
-            this.core.coreEmitter.emit("thinking", false);
+            tempMessage.title(`NLU`).beginFormatting().warn(`NLP execution generated error: ${err}`).endFormatting();
+            this.brain.emitter.emit("message", tempMessage);
+            this.brain.socket.emit("thinking", false, extraData);
         }
 
         return true;
@@ -138,8 +147,8 @@ class NLU {
 
                     let tempMessage = new InterfaceMessage();
                     tempMessage.source = "NLU"; tempMessage.destination = "console";
-                    tempMessage.title(`NLU`).startFormatting().success("NLP found valid fallback.").endFormatting();
-                    this.core.coreEmitter.emit("message", tempMessage);
+                    tempMessage.title(`NLU`).beginFormatting().success("NLP found valid fallback.").endFormatting();
+                    this.brain.emitter.emit("message", tempMessage);
 
                     return obj;
                 }

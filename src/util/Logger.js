@@ -84,7 +84,7 @@ const coreTranslations = {
      * Prepend a string to the content.
      * @param {String} str 
      */
-    prefix(str) {
+    prepend(str) {
         this.content = str + this.content;
     }
 

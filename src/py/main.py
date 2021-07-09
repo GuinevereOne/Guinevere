@@ -8,6 +8,11 @@ def main():
     path.append(".")
 
     queryobj = util.getQuery() # Retrieve query parameters
-    module = import_module("packages." + queryobj["package"] + "." + queryobj["module"])
+    packagepath = "data.packages." + queryobj["package"] + ".code." + queryobj["module"]
+    module = import_module(packagepath)
+
     # Find and execute the function with the necessary parameters
     return getattr(module, queryobj["action"]) (queryobj["query"], queryobj["entities"])
+
+if __name__ == '__main__':
+	main()

@@ -16,9 +16,15 @@
             "Unexpected system error encountered.",
             "Red alert. Shields up.",
             "Internal introspection returned: FAULT.",
-            "Self diagnostics report something bad going on.",
+            "Self diagnostics report something bad going on",
             "I have a bad feeling about this."
         ],
+
+        "random_error_detail": {
+            "nlu": 
+                "NLU had an error! %error%"
+            
+        },
 
         "random_unknown": [
             "Your query didn't match any known module. I'm not equipped to handle these questions.",

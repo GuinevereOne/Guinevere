@@ -1,5 +1,5 @@
 {
-    "greeting": {
+    "greet": {
         "default": [
             "Hi!",
             "Hello!",

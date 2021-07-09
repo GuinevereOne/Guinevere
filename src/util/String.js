@@ -10,6 +10,15 @@ class StringUtils {
     static CapitalFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.substr(1);
     }
+
+    static RemoveEndPunctuation(string) {
+        const punctuation = ['.', ';', ':', '?', '!'];
+
+        if(punctuation.includes(string[string.length - 1])) 
+            return string.substr(string, string.length - 1);
+        
+        return string;
+    }
 }
 
 module.exports = {

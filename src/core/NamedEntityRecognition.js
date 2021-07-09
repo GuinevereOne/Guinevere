@@ -14,7 +14,9 @@ const { Core } = require("../core/ServerCore");
 const { InterfaceMessage } = require("../util/Logger");
 const { ConsoleInterface } = require("../util/ConsoleLogger");
 
-const { readFileSync } = require('fs')
+const { readFileSync } = require('fs');
+const EventEmitter = require("events");
+const { StringUtils } = require("../util/String");
 
 
 /**
@@ -28,16 +30,16 @@ class NER {
      * Called during Core#init
      *
      * @constructor
-     * @param {Core} core
+     * @param {EventEmitter} core
      */
-    constructor(core) {
-        this.core = core;
+    constructor(emitter) {
+        this.emitter = emitter;
         this.container = containerBootstrap();
         this.container.register('extract-builtin-??', new BuiltinMicrosoft(), true);
         this.ner = new Ner({ container: this.container });
         this.supportedTypes = [ 'regex', 'trim' ]
 
-        core.coreEmitter.emit("registerModule", "NER", "Okay");
+        emitter.emit("registerModule", "NER", "Okay");
     }
 
     /**
@@ -69,7 +71,7 @@ class NER {
 
             const { classification } = object;
 
-            const query = `${string.removeEndPunctuation(obj.query)}`;
+            const query = `${StringUtils.RemoveEndPunctuation(object.query)}`;
             const expressionsObj = JSON.parse(readFileSync(expressions, 'utf8'));
             const { module, action } = classification;
             const promises = [];
@@ -78,7 +80,7 @@ class NER {
             if(typeof expressionsObj[module][action].entities !== 'undefined') {
                 const actionEntities = expressionsObj[module][action].entities;
 
-
+                console.log("AAA");
                 for (let i = 0; i < actionEntities.length; i++) {
                     const entity = actionEntities[i]
                     if(!this.supportedTypes.includes(entity.type)) {
@@ -115,10 +117,11 @@ class NER {
                     tempMessage.source = "NER";
                     tempMessage.destination = "console";
 
-                    this.core.coreEmitter.emit("message", tempMessage);
+                    this.emitter.emit("message", tempMessage);
                     resolve([]);
                 }
             }
+            resolve();
         });
     }
 
