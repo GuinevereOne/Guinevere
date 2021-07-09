@@ -1,0 +1,34 @@
+{
+    "greeting": {
+        "default": [
+            "Hi!",
+            "Hello!",
+            "Hello there!",
+            "Hi! What's up?!"
+        ],
+        "morning": [
+            "Good morning!"
+        ],
+        "morning_1": [
+            "Good morning, have a very nice day!",
+            "Good morning, enjoy your day!"
+        ],
+        "afternoon": [
+            "Good afternoon!"
+        ],
+        "evening": [
+            "Good evening!"
+        ],
+        "night": [
+            "Hi! Good night!",
+            "Hello! I bid you a good night.",
+            "Hey! Sleep well."
+        ],
+        "late": [
+            "Hey! It seems you are pulling an all-nighter, be careful.",
+            "Hi! Don't forget to sleep.",
+            "Hello! I'm feeling grateful you still talk to me, but you should get some sleep now.",
+            "Hello. Insomnia?"
+        ]
+    }
+}
