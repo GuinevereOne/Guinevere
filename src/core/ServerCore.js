@@ -262,7 +262,7 @@ class Core {
                     message.info(`${queryData.client} emitted ${queryData.value}`);
 
                     this.coreEmitter.emit("message", message);
-                    socket.emit("thinking", true, queryData.return);
+                    socket.emit("thinking", true, queryData);
                     await this.nlu.process(queryData.value, queryData.extra);
                 });
             }
