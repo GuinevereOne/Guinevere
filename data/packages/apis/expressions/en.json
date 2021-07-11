@@ -1,0 +1,39 @@
+{
+    "paste": {
+        "create": {
+            "expressions": [
+                "Create a new paste",
+                "Make a new paste",
+                "New paste"
+            ]
+        },
+        "view_all": {
+            "expressions": [
+                "Show me all pastes",
+                "Show me a list of pastes",
+                "Display pastes",
+                "View pastes"
+            ]
+        },
+        "view": {
+            "expressions": [
+                "Show me paste x",
+                "View paste x",
+                "Display paste x",
+                "What's in paste x"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "paste",
+                    "conditions": [
+                        {
+                            "type": "after_first",
+                            "from": "paste"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

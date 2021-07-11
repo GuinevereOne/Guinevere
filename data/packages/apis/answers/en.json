@@ -1,0 +1,32 @@
+{
+    "paste": {
+        "paste_made": [
+            "Paste %paste% created.",
+            "Done. Its' ID is %paste%."
+        ],
+        "need_paste": [
+            "I need a paste name.",
+            "You didn't specify which one."
+        ],
+        "no_pastes": [
+            "I can't see any pastes uploaded.",
+            "There don't seem to be any pastes available."
+        ],
+        "empty_paste": [
+            "That paste has no content.",
+            "That paste is empty.",
+            "I can't read the content of that paste."
+        ],
+        "missing_paste": [
+            "That paste doesn't exist.",
+            "That paste is unavailable."
+        ],
+
+        "paste_list": [
+            "Here are the %count% pastes i found: <ul>%result%</ul>"
+        ],
+        "paste_list_element": [
+            "<li>%id%: %title% by %user%</li>"
+        ]
+    }
+}
