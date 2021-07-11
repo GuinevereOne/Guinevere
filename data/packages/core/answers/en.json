@@ -30,5 +30,18 @@
             "Hello! I'm feeling grateful you still talk to me, but you should get some sleep now.",
             "Hello. Insomnia?"
         ]
+    },
+    "farewell": {
+        "default": [
+            "Bye~",
+            "Goodbye",
+            "Take care.",
+            "Farewell!",
+            "See you around",
+            "I'll be here if you need me again.",
+            "Cya",
+            "See ya!",
+            "o7"
+        ]
     }
 }

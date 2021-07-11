@@ -11,7 +11,17 @@
             "Good evening",
             "What's up?",
             "How are you?",
-            "How are you doing?"
+            "How are you doing?",
+            "o/"
+          ]
+        }
+    },
+    "farewell": {
+        "run": {
+          "expressions": [
+            "Bye.",
+            "Goodbye",
+            "See you later"
           ]
         }
     }
