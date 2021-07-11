@@ -148,10 +148,9 @@ class Core {
             }
 
             setupMessage.success(`Current Language is ${process.env.GWEN_LANG}.`);
-            setupMessage.success(`Current timezone is ${DateTime.local().zoneName}.`)
-            process.env.LOGGER ? setupMessage.success("Collaborative Logger Enabled") :
-                                 setupMessage.warn("Collaborative Logger Disabled")
-                                 .endFormatting();
+            setupMessage.success(`Current timezone is ${DateTime.local().zoneName}. This may affect future responses.`)
+
+            setupMessage.endFormatting();
 
 
             this.startupMessage = setupMessage;

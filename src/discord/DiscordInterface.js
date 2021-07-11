@@ -100,31 +100,27 @@ class DiscordInterface {
 
             this.socket = io("http://localhost:" + this.gwen.corePort);
             this.socket.on("connect", () => this.socket.emit("init", "DiscordClient"));
-            this.socket.on("thinking", (newStatus, source) => source != null ? this.client.channels.fetch(source.channelId).then(channel => newStatus ? channel.startTyping() : channel.stopTyping()) : null);
+            this.socket.on("thinking", (newStatus, extra) => extra != null ? this.client.channels.fetch(extra.return.channelId).then(channel => newStatus ? channel.startTyping() : channel.stopTyping()) : null);
 
             
-            this.socket.on("answer", (message, source) => {
+            this.socket.on("answer", (message, extra) => {
                 let tempMessage = new InterfaceMessage();
                 tempMessage.source = "Discord"; tempMessage.destination = "console";
 
 
                 // I FUCKING HATE PROMISES
                 const destination = "";
-                if(source == null) {
+                if (extra == null) {
                     tempMessage.title(`Discord`).beginFormatting().info(`Sending response: "${message}" to home`).endFormatting();
                     this.gwen.coreEmitter.emit("message", tempMessage);
                 } else {
-                    this.client.users.fetch(source.authorId).then(user => {
+                    this.client.users.fetch(extra.return.authorId).then(user => {
                         tempMessage.title(`Discord`).beginFormatting().info(`Sending response: "${message}" to ${user.tag}`).endFormatting();
                         this.gwen.coreEmitter.emit("message", tempMessage);
                     }, err => console.log(err));
                 }
 
-                if(source != null)
-                    this.client.channels.fetch(source.channelId).then(channel => 
-                        channel.messages.fetch(source.id).then(origMessage => 
-                            origMessage.reply(message, { disableMentions: "all", allowedMentions: { users: []}})
-                        ), err => console.log(err), err => console.log(err));
+                if (extra != null)
                 else
                     this.sendToHome(message);
             });
@@ -149,7 +145,7 @@ class DiscordInterface {
                 tempMessage.source = "Discord"; tempMessage.destination = "console";
                 tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
                 this.gwen.coreEmitter.emit("message", tempMessage);
-                this.socket.emit("query", { client: "DiscordClient", value: trimmedMessage, return: message });
+                    this.socket.emit("query", { client: "DiscordClient", value: trimmedMessage, extra: extraData });
             }
         });
     }

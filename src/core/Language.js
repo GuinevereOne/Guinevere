@@ -77,11 +77,13 @@ class NLU {
             }
         };
 
+        extraData.classification = obj.classification;
+
         if(intent == 'None') {
             const fallback = NLU.fallback(obj, langs[process.env.GWEN_LANG].fallbacks);
 
             if(fallback == false) {
-                this.brain.talk(`${this.brain.parse("random_unknown")}`, true);
+                this.brain.talk(`${this.brain.parse("random_unknown")}`, true, extraData);
                 this.brain.socket.emit("thinking", false, extraData);
 
                 let tempMessage = new InterfaceMessage();
@@ -115,7 +117,7 @@ class NLU {
         } catch (err) {
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "console";
-            tempMessage.title(`NLU`).beginFormatting().warn(`NLP execution generated error: ${err}`).endFormatting();
+            tempMessage.title(`NLU`).beginFormatting().warn("NLP execution generated error: ").warn(`${JSON.stringify(err)}`).endFormatting();
             this.brain.emitter.emit("message", tempMessage);
             this.brain.socket.emit("thinking", false, extraData);
         }

@@ -80,7 +80,8 @@ class Brain {
                         module: query.classification.module,
                         action: query.classification.action,
                         query: query.query,
-                        entities: query.entities == undefined ? [] : query.entities
+                        entities: query.entities == undefined ? [] : query.entities,
+                        extra: extraData
                     }
 
                     try {
