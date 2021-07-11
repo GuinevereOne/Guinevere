@@ -10,7 +10,6 @@ const { Ner } = require("@nlpjs/ner")
 const { containerBootstrap } = require("@nlpjs/core-loader");
 const { BuiltinMicrosoft } = require("@nlpjs/builtin-microsoft");
 
-const { Core } = require("../core/ServerCore");
 const { InterfaceMessage } = require("../util/Logger");
 const { ConsoleInterface } = require("../util/ConsoleLogger");
 
@@ -36,8 +35,9 @@ class NER {
         this.emitter = emitter;
         this.container = containerBootstrap();
         this.container.register('extract-builtin-??', new BuiltinMicrosoft(), true);
-        this.ner = new Ner({ container: this.container });
+        this.ner = new Ner({ container: this.container});
         this.supportedTypes = [ 'regex', 'trim' ]
+
 
         emitter.emit("registerModule", "NER", "Okay");
     }
@@ -63,67 +63,64 @@ class NER {
      * @param {*} object A struct of { entities, {module, action} } used to encode the query. 
      */
 
-    extractNamedEntities(lang, expressions, object) {
-        return new Promise(async (resolve, reject) => {
-            let message = new InterfaceMessage("").title("NER").beginFormatting()
+    async extractNamedEntities(lang, expressions, object) {
+        let message = new InterfaceMessage("").title("NER").beginFormatting()
 
-            message.info("Searching for entities")
+        message.info("Searching for entities")
 
-            const { classification } = object;
+        const { classification } = object;
 
-            const query = `${StringUtils.RemoveEndPunctuation(object.query)}`;
-            const expressionsObj = JSON.parse(readFileSync(expressions, 'utf8'));
-            const { module, action } = classification;
-            const promises = [];
+        const query = `${StringUtils.RemoveEndPunctuation(object.query)}`;
+        const expressionsObj = JSON.parse(readFileSync(expressions, 'utf8'));
+        const { module, action } = classification;
+        const promises = [];
 
-            // Make sure the action is valid
-            if(typeof expressionsObj[module][action].entities !== 'undefined') {
-                const actionEntities = expressionsObj[module][action].entities;
+        // Make sure the action is valid
+        if (typeof expressionsObj[module][action].entities !== 'undefined') {
+            const actionEntities = expressionsObj[module][action].entities;
 
-                for (const entity of actionEntities) {
-                    if(!this.supportedTypes.includes(entity.type)) {
-                        reject({ type: 'warning', obj: new Error(`"${entity.type}" not supported.`), code: 'ner_type_not_supported', data: { '%entity_type%': entity.type } })
-                    } else if (entity.type === 'regex') {
-                        promises.push(this.injectRegexEntity(lang, entity))
-                    } else if (entity.type === 'trim') {
-                        promises.push(this.injectTrimEntity(lang, entity))
-                    }
-                }
-
-                // Wait for entities to be processed
-                await Promise.all(promises)
-
-                // Collate all the new entities
-
-                const process =  await this.ner.process({ locale: lang, text: query });
-                console.log(process);
-
-                const {entities} = process;
-
-                // Trim the source and utterance of the new entities
-                entities.map((entity) => {
-                    entity.sourceText = entity.sourceText.trim()
-                    entity.utteranceText = entity.utteranceText.trim();
-
-                    return entity;
-                })
-
-                if(entities.length > 0) {
-                    // Tell the console that we found something
-                    NER.logEntities(entities)
-                    // return and resolve
-                    resolve(entities)
-                } else {
-                    let tempMessage = new InterfaceMessage().title("NER Debug").beginFormatting().warn(`No entity found in query: "${query}"`).endFormatting();
-                    tempMessage.source = "NER";
-                    tempMessage.destination = "console";
-
-                    this.emitter.emit("message", tempMessage);
-                    resolve([]);
+            for (const entity of actionEntities) {
+                if (!this.supportedTypes.includes(entity.type)) {
+                    throw { data: `"${entity.type}" not supported.`, code: "ner_type_not_supported" };
+                } else if (entity.type === 'regex') {
+                    promises.push(this.injectRegexEntity(lang, entity))
+                } else if (entity.type === 'trim') {
+                    promises.push(this.injectTrimEntity(lang, entity))
                 }
             }
-            resolve();
-        });
+
+            // Wait for entities to be processed
+            await Promise.all(promises);
+
+            // Collate all the new entities
+
+            const process = await this.ner.process({ locale: lang, text: query });
+            console.log(process);
+
+            const { entities } = process;
+
+            // Trim the source and utterance of the new entities
+            entities.map((entity) => {
+                entity.sourceText = entity.sourceText.trim()
+                entity.utteranceText = entity.utteranceText.trim();
+
+                return entity;
+            })
+
+            if (entities.length > 0) {
+                // Tell the console that we found something
+                NER.logEntities(entities)
+                // return and resolve
+                return entities;
+            } else {
+                let tempMessage = new InterfaceMessage().title("NER Debug").beginFormatting().warn(`No entity found in query: "${query}"`).endFormatting();
+                tempMessage.source = "NER";
+                tempMessage.destination = "console";
+
+                this.emitter.emit("message", tempMessage);
+                return [];
+            }
+        }
     }
 
     /**
@@ -149,11 +146,11 @@ class NER {
                 const conditionMethod = `add${StringUtils.SnakeToPascalCase(condition.type)}Condition`
 
                 if(condition.type === 'between') {
-                    this.ner[conditionMethod](language, condition.from, condition.to);
+                    this.ner[conditionMethod](language, entity.name, condition.from, condition.to);
                 } else if (condition.type.indexOf('after') !== -1) {
-                    this.ner[conditionMethod](language, condition.from)
+                    this.ner[conditionMethod](language, entity.name, condition.from)
                 } else if(condition.type.indexOf('before') !== -1) {
-                    this.ner[conditionMethod](language, condition.to)
+                    this.ner[conditionMethod](language, entity.name, condition.to)
                 }
             }
             resolve()
