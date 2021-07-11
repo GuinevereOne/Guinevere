@@ -1,4 +1,17 @@
 { 
+    "introduce": {
+        "run": {
+          "expressions": [
+            "Who are you?",
+            "What are you?",
+            "Who made you?",
+            "Who is your creator?",
+            "Who created you?",
+            "What do i call you?",
+            "Where are you?"
+          ]
+        }
+    },
     "greet": {
         "run": {
           "expressions": [

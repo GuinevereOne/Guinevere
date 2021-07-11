@@ -1,4 +1,14 @@
 {
+    "introduce": {
+        "default": [
+            "I am Guinevere, the queen of Camelot.",
+            "I am Guinevere, the AI assistant to the Curle household.",
+            "I am Guinevere, the robotic assistant to the Curles.",
+            "I am Guinevere, the computer guardian of the Curles.",
+            "I am Guinevere, the Curles' computer assistant.",
+            "I am Guinevere. And you are?"
+        ]
+    },
     "greet": {
         "default": [
             "Hi!",
