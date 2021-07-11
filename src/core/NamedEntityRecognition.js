@@ -80,8 +80,7 @@ class NER {
             if(typeof expressionsObj[module][action].entities !== 'undefined') {
                 const actionEntities = expressionsObj[module][action].entities;
 
-                for (let i = 0; i < actionEntities.length; i++) {
-                    const entity = actionEntities[i]
+                for (const entity of actionEntities) {
                     if(!this.supportedTypes.includes(entity.type)) {
                         reject({ type: 'warning', obj: new Error(`"${entity.type}" not supported.`), code: 'ner_type_not_supported', data: { '%entity_type%': entity.type } })
                     } else if (entity.type === 'regex') {
@@ -96,7 +95,10 @@ class NER {
 
                 // Collate all the new entities
 
-                const { entities } = await this.ner.process({ locale: lang, text: query });
+                const process =  await this.ner.process({ locale: lang, text: query });
+                console.log(process);
+
+                const {entities} = process;
 
                 // Trim the source and utterance of the new entities
                 entities.map((entity) => {
@@ -143,17 +145,15 @@ class NER {
      */
     injectTrimEntity(language, entity) {
         return new Promise((resolve) => {
-            for (let i = 0; i < entity.conditions.length; i++) {
-                const condition = entity.conditions[i]
-                const conditionMethod = `add${string.snakeToPascalCase(condition.type)}Condition`
+            for (const condition of entity.conditions) {
+                const conditionMethod = `add${StringUtils.SnakeToPascalCase(condition.type)}Condition`
 
                 if(condition.type === 'between') {
                     this.ner[conditionMethod](language, condition.from, condition.to);
-
                 } else if (condition.type.indexOf('after') !== -1) {
-                    this.ner[conditionMethod](lang, condition.from)
+                    this.ner[conditionMethod](language, condition.from)
                 } else if(condition.type.indexOf('before') !== -1) {
-                    this.ner[conditionMethod](lang, condition.to)
+                    this.ner[conditionMethod](language, condition.to)
                 }
             }
             resolve()
