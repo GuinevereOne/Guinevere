@@ -19,6 +19,10 @@ class StringUtils {
         
         return string;
     }
+
+    static SnakeToPascalCase(string) {
+        return string.split("_").map(str => StringUtils.CapitalFirstLetter(str)).join("");
+    }
 }
 
 module.exports = {
