@@ -263,7 +263,7 @@ class Core {
 
                     this.coreEmitter.emit("message", message);
                     socket.emit("thinking", true, queryData.return);
-                    await this.nlu.process(queryData.value, queryData.return);
+                    await this.nlu.process(queryData.value, queryData.extra);
                 });
             }
         });
