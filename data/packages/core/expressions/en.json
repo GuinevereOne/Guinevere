@@ -24,5 +24,19 @@
             "See you later"
           ]
         }
+    },
+    "joke": {
+        "run": {
+          "expressions": [
+            "Tell a joke",
+            "Tell me a joke",
+            "Tell me something funny",
+            "Make me laugh",
+            "Share something funny",
+            "Share a joke",
+            "I want a joke",
+            "i want to laugh"
+          ]
+        }
     }
 }

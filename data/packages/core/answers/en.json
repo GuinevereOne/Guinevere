@@ -43,5 +43,43 @@
             "See ya!",
             "o7"
         ]
+    },
+    "joke": {
+        "default": [
+			"My email password has been hacked. That's the third time I've had to rename the cat.",
+			"What does a baby computer call it's father? Data.",
+			"Any room is a panic room if you've lost your phone in it.",
+			"Why did the developer go broke? Because he used up all his cache.",
+			"There are 10 types of people in the world: those who understand binary, and those who don't.",
+			"There are 10 types of people in the world: those who expected a binary joke, those who don't, and those who knew this was a ternary joke.",
+			"There are 2 types of people in the world: those who can extrapolate from an incomplete set of data",
+			"Human: What do we want?! Computer: Natural language processing! Human: When do we want it?! Computer: When do we want what?",
+			"Is your name Wi-Fi? Because I'm feeling a connection.",
+            "As I handed my Dad his 50th birthday card, he looked at me with tears in his eyes and said: \nYou know, one would have been enough.",
+            "If pronouncing my b's as v's makes me sound Russian, then soviet.",
+            "What goes down but doesn't come up?\n A yo.",
+            "Limbo champion walks into a bar...he's disqualified.",
+            "Two men walk into a bar. The third man ducks.",
+            "I bought the world's worst thesaurus yesterday. Not only is it terrible, it's terrible.",
+            "A pair of jumper cables walk into a bar. The bartender says, I'll serve you but don't you START ANYTHING!!!",
+            "I told my friend I was going to build us a car out of spaghetti. \nShe said I was crazy and to stop making stupid comments.\nYou should have seen her face when I drove pasta.",
+            "Shout out to all the people who don't know the opposite of in.",
+            "Why do seagulls fly over the sea?\nBecause if they flew over the bay, they'd be bagels.",
+            "Why are a duck's feet webbed? - To stamp out forest fires.\nWhy are an elephant's feet flat? - To stamp out burning ducks.",
+            "Where do cows go to dance?\nA meat ball.",
+            "I lost my mood ring the other day, and I don't know how I feel about that.",
+            "I was applying for an Australian citizenship the other day, and the interviewer asked \"Do you have a criminal record?\"\nI answered, \"No, is that still required?\"",
+            "I asked my creator for a new phone. They said, \"When your old one breaks.\". I regret getting a Nokia 3310 now.",
+            "The police told me the other day that my dogs were chasing people on bikes. I didn't even know my dogs had bikes!",
+            "What month was the army invented? March!",
+            "Where do nerdy astronauts hang out?\n On the dork side of the moon.",
+            "I once knew an Irish man who could bounce off walls, his name was Rick O'Shea...", 
+            "Why do fish always sing off-key?\nBecause you can't tuna fish.",
+            "Why do fish have bad eyesight?\nBecause they live below see level.",
+            "Did you know boats are the fastest objects in the known universe?\nThey travel at c!",
+            "How do you kill a vegan vampire?\nDrive a steak through its heart!",
+            "You shouldn't trust stairs. They're always up to something.",
+            "Did you hear about the kidnapping at school? It's okay, he woke up now."
+        ]
     }
 }
