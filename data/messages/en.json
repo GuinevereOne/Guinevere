@@ -17,7 +17,8 @@
             "Red alert. Shields up.",
             "Internal introspection returned: FAULT.",
             "Self diagnostics report something bad going on",
-            "I have a bad feeling about this."
+            "I have a bad feeling about this.",
+            "things broken, yo!"
         ],
 
         "random_error_detail": {
