@@ -81,7 +81,7 @@ class NER {
 
             for (const entity of actionEntities) {
                 if (!this.supportedTypes.includes(entity.type)) {
-                    throw { data: `"${entity.type}" not supported.`, code: "ner_type_not_supported" };
+                    throw { message: `"${entity.type}" not supported.`, code: "ner_type_not_supported", data: { '%entity_type%': entity.type } };
                 } else if (entity.type === 'regex') {
                     promises.push(this.injectRegexEntity(lang, entity))
                 } else if (entity.type === 'trim') {

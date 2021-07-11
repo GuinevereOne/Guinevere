@@ -107,7 +107,7 @@ class NLU {
         } catch (err) {
             let tempMessage = new InterfaceMessage();
             tempMessage.source = "NLU"; tempMessage.destination = "console";
-            tempMessage.title(`NLU`).beginFormatting().warn(`NLP entity extraction generated error: ${err}`).endFormatting();
+            tempMessage.title(`NLU`).beginFormatting().warn(`NLP entity extraction generated error: ${err.message}`).endFormatting();
             this.brain.emitter.emit("message", tempMessage);
             this.brain.talk(`${this.brain.parse(err.code, "", err.data)}`);
         }
