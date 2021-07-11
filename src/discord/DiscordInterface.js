@@ -26,8 +26,9 @@ class DiscordInterface {
                 'GUILD_MESSAGES',
                 'GUILD_MESSAGE_REACTIONS',
                 'GUILD_MESSAGE_TYPING',
-            ]});
-        this.socket = { };
+            ]
+        });
+        this.socket = {};
 
         this.setupCallbacks(this.gwen, this.client);
 
@@ -40,8 +41,8 @@ class DiscordInterface {
     */
     recodeMessage(message) {
         message.replaceAll(coreTranslations.beginFormatting, "```diff\n");
-        message.replaceAll(coreTranslations.title, "**");
-        message.replaceAll(coreTranslations.endTitle, "**\n");
+        message.replaceAll(coreTranslations.title, "*");
+        message.replaceAll(coreTranslations.endTitle, "*\n");
         message.replaceAll(coreTranslations.success, "+ ");
         message.replaceAll(coreTranslations.error, "- ");
         message.replaceAll(coreTranslations.info, "");
@@ -60,24 +61,23 @@ class DiscordInterface {
 
         core.coreEmitter.on("startup", (message) => {
             let newMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message)
-            newMessage.discordData = {destinationGuild: meta.homeGuild, destinationChannel: meta.homeChannel};
+            newMessage.discordData = { destinationGuild: meta.homeGuild, destinationChannel: meta.homeChannel };
             this.transmissionBuffer.push(newMessage);
         });
 
         core.coreEmitter.on("message", (message) => {
-            if(message.destination == "discord" || message.destination == "any") {
+            if (message.destination == "discord" || message.destination == "any") {
                 let tempMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message);
-                tempMessage.prepend(`New message from ${message.source} destined for ${message.destination}:\n`);
-                
-                if(!this.ready) {
+
+                if (!this.ready) {
                     this.transmissionBuffer.push(newMessage);
                     return;
                 }
-
+                
                 let channel = message.discordData != null ? message.discordData.destinationChannel : meta.homeChannel;
                 this.client.channels.fetch(channel).then(channel => {
-                    if(channel instanceof gateway.TextChannel)
-                      channel.send(this.recodeMessage(tempMessage));
+                    if (channel instanceof gateway.TextChannel)
+                        channel.send({ embeds: [this.prepareEmbed(tempMessage)] });
                 }, err => console.log(err));
             }
         });
@@ -102,11 +102,12 @@ class DiscordInterface {
             this.socket.on("connect", () => this.socket.emit("init", "DiscordClient"));
             this.socket.on("thinking", (newStatus, extra) => extra != null ? this.client.channels.fetch(extra.return.channelId).then(channel => newStatus ? channel.startTyping() : channel.stopTyping()) : null);
 
-            
+
             this.socket.on("answer", (message, extra) => {
                 let tempMessage = new InterfaceMessage();
                 tempMessage.source = "Discord"; tempMessage.destination = "console";
 
+                let embed = this.prepareEmbed(message, extra);
 
                 // I FUCKING HATE PROMISES
                 const destination = "";
@@ -121,8 +122,9 @@ class DiscordInterface {
                 }
 
                 if (extra != null)
+                    this.replyToReturn(embed, extra);
                 else
-                    this.sendToHome(message);
+                    this.sendToHome(embed);
             });
 
             this.socket.on("error", (cause, message) => {
@@ -133,25 +135,178 @@ class DiscordInterface {
             })
         });
 
-        client.on("message", (message) => {
-            if (message.content === "g!heeeey") {
-                message.reply("sup");
-            }
+        client.on("messageCreate", async (message) => {
+            if (message instanceof gateway.Message) {
+                if (message.content === "g!heeeey") {
+                    message.reply("sup");
+                }
 
-            if (message.content.startsWith("Guinevere, ") || message.content.startsWith("Gwen, ")) {
-                const trimmedMessage = message.content.substr(message.content.indexOf(" "));
+                if (message.content.startsWith("Guinevere, ") || message.content.startsWith("Gwen, ")) {
+                    // raven is a git
+                    if(message.author.id == 718189714200330321) {
+                        return;
+                    }
+                    
+                    const trimmedMessage = message.content.substr(message.content.indexOf(" ") + 1);
 
-                let tempMessage = new InterfaceMessage();
-                tempMessage.source = "Discord"; tempMessage.destination = "console";
-                tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
-                this.gwen.coreEmitter.emit("message", tempMessage);
+                    const messageId = message.reference == null ? null : message.reference.messageId;
+                    let replyMessage;
+                    if (messageId) {
+                        replyMessage = await message.channel.messages.fetch(messageId);
+                    }
+
+                    const extraData = {
+                        original: trimmedMessage,
+                        return: message,
+                        reply: replyMessage
+                    }
+
+
+                    let tempMessage = new InterfaceMessage();
+                    tempMessage.source = "Discord"; tempMessage.destination = "console";
+                    tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
+                    this.gwen.coreEmitter.emit("message", tempMessage);
                     this.socket.emit("query", { client: "DiscordClient", value: trimmedMessage, extra: extraData });
+                }
             }
         });
     }
 
-    sendToHome(text) {
-        this.client.channels.fetch(meta.homeChannel).then(channel => channel.send(text), err => console.log(err))
+    /**
+     * Send some content to the configured home channel.
+     * @param {InterfaceMessage | String | Object} message - Content to send home
+     */
+    sendToHome(message) {
+        this.client.channels.fetch(meta.homeChannel).then(channel => {
+            if (message instanceof String)
+                channel.send(message)
+            else if(message instanceof InterfaceMessage)
+                this.sendToHome(this.prepareEmbed(message))
+            else
+                channel.send({ embeds: [message] })
+        }, err => console.log(err))
+    }
+
+    /**
+     * Send a message back to the person who sent the original query.
+     * @param {Object} embed 
+     * @param {Object} extra 
+     */
+    replyToReturn(embed, extra) {
+        this.client.channels.fetch(extra.return.channelId).then(channel =>
+            channel.messages.fetch(extra.return.id).then(origMessage =>
+                origMessage.reply({ embeds: [embed] })
+            ), err => console.log(err), err => console.log(err));
+    }
+
+    /**
+     * Create an appropriate embed for the passed message.
+     * @param {InterfaceMessage | String} message - An InterfaceMessage to parse, or a String to forward.
+     * @param {Object} extra - Extra metadata about the state of the system to pass.
+     * @returns {Object} - The embed object
+     */
+    prepareEmbed(message, extra) {
+        const iface = message instanceof InterfaceMessage;
+        if(extra == null)
+            extra = {
+                classification: {
+                    package: "error",
+                    module: "reporting",
+                    action: "send",
+                    confidence: 1
+                },
+                original: "Unknown"
+            };
+        
+        let embed = {
+            color: 0x930596,
+            title: "",
+            author: {
+                name: "Guinevere One",
+                icon_url: "https://media.discordapp.net/attachments/862549587902726144/862596628102774804/guineverebolb.png",
+                url: "https://github.com/guinevereone/Guinevere",
+            },
+            description: "",
+            thumbnail: {
+                url: "https://avatars.githubusercontent.com/u/47305224"
+            },
+            fields: [
+            ],
+            timestamp: new Date(),
+            footer: {
+                text: ""
+            }
+        }
+
+        if(iface) {
+            embed.title = "Intra-System Message";
+            embed.description = `Message from ${message.source}, target: ${message.destination}`;
+            embed.fields.push({
+                name: "Message",
+                value: this.recodeMessage(message).content
+            });
+            embed.footer.text = "Intra-System Messaging";
+        } else {
+            embed.title = "Query Response";
+            embed.description = `Confidence interval: ${extra.classification.confidence}`;
+            embed.fields.push({
+                name: "Query",
+                value: extra.original
+            });
+            embed.footer.text = `Request handled by ${extra.classification.package}.${extra.classification.module}.${extra.classification.action}`;
+
+            embed = this.handleMessageFormatting(embed, message, extra);
+        }
+
+        return embed;
+    }
+
+    /**
+     * Handle special formatting in a message.
+     * Currently turns an unordered list into an array of fields.
+     * @param {Object} embed The embed to reformat
+     * @param {String} message message to format the embed with
+     * @param {Object} extra Extra data from the source of the message
+     * @returns The finished embed
+     */
+
+    handleMessageFormatting(embed, message, extra) {
+        if(message.includes("<ul>")) {
+            let startOfList = message.indexOf("<ul>");
+            embed.fields.push({
+                name: "Response header:",
+                value: message.substr(0, startOfList)
+            });
+            // Assume the list we're given is well formed. This is a silly idea.
+            let endOfList = message.indexOf("</ul>");
+
+            let list = message.substr(startOfList + 4, endOfList);
+            let listItems = list.split("</li>")
+            listItems = listItems.slice(0, -1);
+            for(const listItem of listItems) {
+                let startOfItem = 4
+                let itemSeparator = listItem.indexOf(":");
+
+                embed.fields.push({
+                    name: listItem.substr(startOfItem, itemSeparator - startOfItem),
+                    value: listItem.substr(itemSeparator + 1),
+                    inline: true
+                });
+            }
+
+            embed.fields.push({
+                name: "Response footer",
+                value: message.substr(endOfList + 5).length != 0 ? message.substr(endOfList + 5) : "Not present"
+            });
+
+        } else {
+            embed.fields.push({
+                name: "Response",
+                value: message
+            });
+        }
+
+        return embed;
     }
 
 }
