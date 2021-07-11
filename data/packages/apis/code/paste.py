@@ -46,15 +46,18 @@ def view(string, entities):
     pasteID = ""
 
     for item in entities:
-        if item["entity"] == "paste":
+        if item["entity"] == "paste" or item["entity"] == "id" or item["entity"] == "number":
             pasteID = item["utteranceText"].lower().strip()
     
     response = requests.get(f"https://paste.gemwire.uk/view/raw/{pasteID}")
     text = response.text
 
-    if len(text) > 1023:
-        util.output("end", "text", text[0:1019] + " ...")
-    elif len(text) > 0:
-        util.output("end", "text", text)
+    if response.status_code == 200:
+        if len(text) > 1023:
+            util.output("end", "text", text[0:1019] + " ...")
+        elif len(text) > 0:
+            util.output("end", "text", text)
+        else:
+            util.output("end", "missing_paste", util.translate("missing_paste", { "ID": pasteID }))  
     else:
-        util.output("end", "missing_paste", util.translate("missing_paste"))
+        util.output("end", "missing_paste", util.translate("missing_paste", { "ID": pasteID }))

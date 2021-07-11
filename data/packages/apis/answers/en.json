@@ -18,8 +18,8 @@
             "I can't read the content of that paste."
         ],
         "missing_paste": [
-            "That paste doesn't exist.",
-            "That paste is unavailable."
+            "Paste \"%ID%\" doesn't exist.",
+            "Paste \"%ID%\" is unavailable."
         ],
 
         "paste_list": [

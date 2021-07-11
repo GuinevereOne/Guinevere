@@ -17,19 +17,47 @@
         },
         "view": {
             "expressions": [
-                "Show me paste x",
-                "View paste x",
-                "Display paste x",
-                "What's in paste x"
+                "View paste number",
+                "View paste ID",
+                "View paste",
+                "Display paste number",
+                "Display paste ID",
+                "Display paste",
+                "What's in paste number",
+                "What's in paste ID",
+                "What's in paste",
+                "Show paste number",
+                "Show paste ID",
+                "Show paste"
             ],
             "entities": [
+                {
+                    "type": "trim",
+                    "name": "id",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "ID"
+                        }
+                    ]
+                },
                 {
                     "type": "trim",
                     "name": "paste",
                     "conditions": [
                         {
-                            "type": "after_first",
+                            "type": "after",
                             "from": "paste"
+                        }
+                    ]
+                },
+                {
+                    "type": "trim",
+                    "name": "number",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "number"
                         }
                     ]
                 }
