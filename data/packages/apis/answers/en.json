@@ -28,5 +28,16 @@
         "paste_list_element": [
             "<li>%id%: %title% by %user%</li>"
         ]
+    },
+    "forge_quotes": {
+        "quote": [
+            "%ID% | %text% - %author%"
+        ],
+        "quote_doesnt_exist": [
+            "That quote doesn't exist.",
+            "Quote not found.",
+            "Invalid index into array.",
+            "Whoopsie, that's a no-no."
+        ]
     }
 }

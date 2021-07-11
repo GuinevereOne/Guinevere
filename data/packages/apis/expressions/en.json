@@ -63,5 +63,65 @@
                 }
             ]
         }
+    },
+    "forge_quotes": {
+        "view_random": {
+            "expressions": [
+                "Show me a quote",
+                "Show me a random",
+                "Show a quote",
+                "Display a quote",
+                "Display a random quote",
+                "Quote"
+            ]
+        },
+        "view": {
+            "expressions": [
+                "View quote number",
+                "View quote ID",
+                "View quote",
+                "Display quote number",
+                "Display quote ID",
+                "Display quote",
+                "What's quote number",
+                "What's quote ID",
+                "What's quote",
+                "Show quote number",
+                "Show quote ID",
+                "Show quote"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "id",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "ID"
+                        }
+                    ]
+                },
+                {
+                    "type": "trim",
+                    "name": "quote",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "paste"
+                        }
+                    ]
+                },
+                {
+                    "type": "trim",
+                    "name": "number",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "number"
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }
