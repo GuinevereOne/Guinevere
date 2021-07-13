@@ -149,14 +149,13 @@ class DiscordInterface {
                 // Early process replies so that they don't have to be prefixed with "Gwen, "
                 const messageId = message.reference == null ? null : message.reference.messageId;
                 
-                const trimmedMessage = message.content.substr(message.content.indexOf(" ") + 1);
                 let replyMessage;
                 if (messageId) {
                     replyMessage = await message.channel.messages.fetch(messageId);
                 }
                 
                 const extraData = {
-                    original: trimmedMessage,
+                    original: message.cleanContent,
                     return: message,
                     reply: replyMessage
                 }
@@ -178,13 +177,14 @@ class DiscordInterface {
                             this.gwen.coreEmitter.emit("message", tempMessage);
 
                             // Tell the ServerCore that we're ready
-                            this.socket.emit("reply", { client: "DiscordClient", value: trimmedMessage, extra: extraData });
+                            this.socket.emit("reply", { client: "DiscordClient", value: message.cleanContent, extra: extraData });
                         }
                         return;
                     }
                 }
 
                 if (message.content.startsWith("Guinevere, ") || message.content.startsWith("Gwen, ")) {
+                    const trimmedMessage = message.content.substr(message.content.indexOf(" ") + 1);
                     let tempMessage = new InterfaceMessage();
                     tempMessage.source = "Discord"; tempMessage.destination = "console";
                     tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
