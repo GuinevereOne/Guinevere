@@ -26,38 +26,22 @@
                 "What's in paste number",
                 "What's in paste ID",
                 "What's in paste",
-                "Show paste number",
-                "Show paste ID",
-                "Show paste"
+                "Show me paste number",
+                "Show me paste ID",
+                "Show me paste"
             ],
             "entities": [
-                {
-                    "type": "trim",
-                    "name": "id",
-                    "conditions": [
-                        {
-                            "type": "after",
-                            "from": "ID"
-                        }
-                    ]
-                },
                 {
                     "type": "trim",
                     "name": "paste",
                     "conditions": [
                         {
                             "type": "after",
-                            "from": "paste"
-                        }
-                    ]
-                },
-                {
-                    "type": "trim",
-                    "name": "number",
-                    "conditions": [
-                        {
-                            "type": "after",
-                            "from": "number"
+                            "from": "paste",
+                            "skip": [
+                                "ID",
+                                "number"
+                            ]
                         }
                     ]
                 }
@@ -68,8 +52,8 @@
         "view_random": {
             "expressions": [
                 "Show me a quote",
-                "Show me a random",
-                "Show a quote",
+                "Show me a random quote",
+                "Show a random quote",
                 "Display a quote",
                 "Display a random quote",
                 "Quote"
@@ -93,31 +77,15 @@
             "entities": [
                 {
                     "type": "trim",
-                    "name": "id",
-                    "conditions": [
-                        {
-                            "type": "after",
-                            "from": "ID"
-                        }
-                    ]
-                },
-                {
-                    "type": "trim",
                     "name": "quote",
                     "conditions": [
                         {
                             "type": "after",
-                            "from": "paste"
-                        }
-                    ]
-                },
-                {
-                    "type": "trim",
-                    "name": "number",
-                    "conditions": [
-                        {
-                            "type": "after",
-                            "from": "number"
+                            "from": "quote",
+                            "skip": [
+                                "ID",
+                                "number"
+                            ]
                         }
                     ]
                 }
@@ -169,10 +137,11 @@
             "expressions": [
                 "How cold is it in",
                 "How hot is it in",
+                "How hot is it at",
                 "How warm is it in",
                 "What's the temperature like in",
                 "What's the temperature in",
-                "Weather report for"
+                "Temperature report for"
             ],
             "entities": [
                 {
@@ -186,6 +155,15 @@
                         {
                             "type": "between",
                             "from": "in",
+                            "to": "?"
+                        },
+                        {
+                            "type": "after",
+                            "from": "at"
+                        },
+                        {
+                            "type": "between",
+                            "from": "at",
                             "to": "?"
                         },
                         {

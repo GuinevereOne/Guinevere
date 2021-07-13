@@ -43,6 +43,7 @@
     "weather": {
         "fetching": [
             "Fetching data for %city%.",
+            "Checking %city%.",
             "Looking up the latest data for %city%.",
             "Hold on, i'm pulling data for %city%.",
             "Working on it. Latest data for %city%, coming right up."

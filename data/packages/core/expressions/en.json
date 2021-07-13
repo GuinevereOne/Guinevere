@@ -10,12 +10,26 @@
             "What do i call you?",
             "Where are you?"
           ]
+        },
+        "personal": {
+          "expressions": [
+            "Can you",
+            "Can you do",
+            "Can you write",
+            "Can you say",
+            "Are you able to",
+            "Do you want to",
+            "Do you wanna",
+            "Wanna",
+            "Want to"
+          ]
         }
     },
     "greet": {
         "run": {
           "expressions": [
             "Hi",
+            "Hiya",
             "Hey",
             "Sup",
             "Hello",
@@ -23,6 +37,8 @@
             "Good afternoon",
             "Good evening",
             "What's up?",
+            "What's poppin",
+            "What's popping",
             "How are you?",
             "How are you doing?",
             "o/"
@@ -51,5 +67,28 @@
             "i want to laugh"
           ]
         }
+    },
+    "test": {
+      "conversation": {
+        "expressions": [
+          "Test a feature",
+          "Test the x feature"
+        ],
+        "entities": [
+          {
+            "type": "trim_slot",
+            "name": "feature",
+            "required": "true",
+            "fill": "What feature do you want to test?",
+            "conditions": [
+              {
+                "type": "between",
+                "from": "the",
+                "to": "feature"
+              }
+            ]
+          }
+        ]
+      }
     }
 }
