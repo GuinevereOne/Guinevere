@@ -10,7 +10,7 @@ const { MemoryConversationContext } = require("node-nlp");
 require("dotenv").config();
 
 
-class Provider {
+class Conversation {
 
     /**
      * @member { [ String, ID ] } conversations - The list of active conversations.
@@ -78,4 +78,4 @@ class Provider {
     }
 }
 
-module.exports = { Provider }
+module.exports = { Conversation }
