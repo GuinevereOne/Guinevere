@@ -1,6 +1,7 @@
 import util
 import requests
 from pyowm import OWM
+from tzlocal import get_localzone
 
 def getOWM():
     return OWM(util.config("apikey"))
@@ -54,7 +55,7 @@ def temperature_city(source, entities):
 
 def sunrise_city(source, entities):
     report = getWeather(entities, getOWM())
-    datetime = report["weather"].sunrise_time(report["weather"])
+    datetime = report["weather"].sunrise_time("date")
     datetime = datetime.astimezone(get_localzone())
 
     return util.output("end", "sunrise", util.translate("sunrise", {
@@ -64,7 +65,7 @@ def sunrise_city(source, entities):
 
 def sunset_city(source, entities):
     report = getWeather(entities, getOWM())
-    datetime = report["weather"].sunset_time(report["weather"])
+    datetime = report["weather"].sunset_time(("date"))
     datetime = datetime.astimezone(get_localzone())
 
     return util.output("end", "sunset", util.translate("sunset", {
