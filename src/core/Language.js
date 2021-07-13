@@ -111,15 +111,14 @@ class NLU {
         this.brain.emitter.emit("message", tempMessage);
 
         if (result.entities.length == 0) {
-            //try {
+            try {
                 obj.entities = await this.processEntities(lang, join(__dirname, "../../data/packages", obj.classification.package, `/expressions/${lang}.json`), obj, context);
-            /*} catch (err) {
+            } catch (err) {
                 let tempMessage = new InterfaceMessage();
                 tempMessage.source = "NLU"; tempMessage.destination = "console";
-                tempMessage.title(`NLU`).beginFormatting().warn(`NLP processing generated error: ${err.message}`).endFormatting();
+                tempMessage.title(`NLU`).beginFormatting().warn(`NLP processing generated error: ${err}`).endFormatting();
                 this.brain.emitter.emit("message", tempMessage);
-                this.brain.talk(`${this.brain.parse(err.code, "", err.data)}`);
-            }*/
+            }
         }
 
         if(obj.entities && obj.entities.length == 0)
