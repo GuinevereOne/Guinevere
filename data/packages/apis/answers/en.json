@@ -39,5 +39,38 @@
             "Invalid index into array.",
             "Whoopsie, that's a no-no."
         ]
+    },
+    "weather": {
+        "fetching": [
+            "Fetching data for %city%.",
+            "Looking up the latest data for %city%.",
+            "Hold on, i'm pulling data for %city%.",
+            "Working on it. Latest data for %city%, coming right up."
+        ],
+        "weather_city": [
+            "%status% over %city%. %temperature%°C, with %humidity%% humidity.",
+            "%city% has %status% weather. It's %temperature%°C and %humidity%% humidity.",
+            "<ul><li>City: %city%</li><li>Status: %status%</li><li>Temperature: %temperature%°C</li><li>Humidity: %humidity%%</li></ul>"
+        ],
+        "temperature": [
+            "%temperature%°C.",
+            "%city% is experiencing %temperature%°C temperatures.",
+            "It's %temperature%°C in %city%."
+        ],
+        "sunrise": [
+            "The sun rises at %time% in %city%.",
+            "For %city%, %time%.",
+            "%time%, but only in %city%."
+        ],
+        "sunset": [
+            "The sun sets at %time% in %city%.",
+            "For %city%, %time%.",
+            "%time%, but only in %city%."
+        ],
+        "error": [
+            "I can't be certain what city you're asking for.",
+            "What city do you want to look up?",
+            "Unless you want the general weather, you need to be more specific."
+        ]
     }
 }

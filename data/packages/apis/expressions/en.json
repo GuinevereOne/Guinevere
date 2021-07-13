@@ -123,5 +123,135 @@
                 }
             ]
         }
+    },
+    "weather": {
+        "weather_default": {
+            "expressions": [
+                "What's the weather like?",
+                "Weather report",
+                "Report the weather"
+            ]
+        },
+        "weather_city": {
+            "expressions": [
+                "What's the weather like in",
+                "Weather report for",
+                "Report the weather in"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "city",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "in"
+                        },
+                        {
+                            "type": "between",
+                            "from": "in",
+                            "to": "?"
+                        },
+                        {
+                            "type": "after",
+                            "from": "for"
+                        },
+                        {
+                            "type": "between",
+                            "from": "for",
+                            "to": "."
+                        }
+                    ]
+                }
+            ]
+        },
+        "temperature_city": {
+            "expressions": [
+                "How cold is it in",
+                "How hot is it in",
+                "How warm is it in",
+                "What's the temperature like in",
+                "What's the temperature in",
+                "Weather report for"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "city",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "in"
+                        },
+                        {
+                            "type": "between",
+                            "from": "in",
+                            "to": "?"
+                        },
+                        {
+                            "type": "after",
+                            "from": "for"
+                        },
+                        {
+                            "type": "between",
+                            "from": "for",
+                            "to": "."
+                        }
+                    ]
+                }
+            ]
+        },
+        "sunrise_city": {
+            "expressions": [
+                "When does the sun rise in",
+                "What times does the sun rise in",
+                "When will the sun rise in",
+                "When did the sun rise in",
+                "What time did the sun rise in"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "city",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "in"
+                        },
+                        {
+                            "type": "between",
+                            "from": "in",
+                            "to": "?"
+                        }
+                    ]
+                }
+            ]
+        },
+        "sunset_city": {
+            "expressions": [
+                "When does the sun set in",
+                "What times does the sun set in",
+                "When will the sun set in",
+                "When did the sun set in",
+                "What time did the sun set in"
+            ],
+            "entities": [
+                {
+                    "type": "trim",
+                    "name": "city",
+                    "conditions": [
+                        {
+                            "type": "after",
+                            "from": "in"
+                        },
+                        {
+                            "type": "between",
+                            "from": "in",
+                            "to": "?"
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

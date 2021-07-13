@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 requests = "*"
+pyowm = "*"
+tzlocal = "*"
 
 [dev-packages]
 
