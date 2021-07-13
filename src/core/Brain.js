@@ -132,8 +132,7 @@ class Brain {
 
                     if(this.output !== '') {
                         this.output = JSON.parse(this.output).output;
-                        this.talk(this.output.text.toString(), true, extraData);
-                        this.emitter.emit("endConversation", extraData);
+                        this.talk(this.output.text.toString(), this.output.flow, extraData);
 
                         if(this.output.type == 'end' && this.output.options.synchronization && this.output.options.synchronization.enabled && this.output.options.synchronization.enabled == true) {
                             const sync = new Sync(this, query.classification, this.output.options.synchronization);

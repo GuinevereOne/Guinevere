@@ -10,12 +10,21 @@ dirname = path.dirname(path.realpath(__file__))
 querypath = argv[1]
 codes = []
 
+flow = True
+
 queryfile = open(querypath, "r", encoding = "utf8")
 queryobj = loads(queryfile.read())
 queryfile.close()
 
 def getQuery():
     return queryobj
+
+def getFlow():
+    return flow
+
+def setFlow(newFlow):
+    global flow
+    flow = newFlow
 
 def config(key):
     file = open(dirname + "/../../data/packages/" + queryobj["package"] + "/config/config.json", "r", encoding = "utf8")
@@ -33,6 +42,7 @@ def output(type, code, message = ""):
         "lang":     queryobj["lang"],
         "input":    queryobj["query"],
         "entities": queryobj["entities"],
+        "flow":     flow,
         "output": {
             "type": type,
             "codes": codes,
