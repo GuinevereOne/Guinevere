@@ -11,6 +11,8 @@ class DiscordInterface {
 
     transmissionBuffer = [];
 
+    conversations = [];
+
     ready = false;
 
     constructor(core) {
@@ -82,6 +84,8 @@ class DiscordInterface {
             }
         });
 
+        core.coreEmitter.on("endConversation", data => this.removeConversation(data));
+
         client.on("ready", () => {
             this.ready = true;
             let dMesg = new InterfaceMessage();
@@ -96,7 +100,7 @@ class DiscordInterface {
             );
 
             this.gwen.coreEmitter.emit("registerModule", "discord", "Okay");
-            this.gwen.coreEmitter.emit("message", dMesg);
+            this.gwen.coreEmitter.emit("message", dMesg);            
 
             this.socket = io("http://localhost:" + this.gwen.corePort);
             this.socket.on("connect", () => this.socket.emit("init", "DiscordClient"));
@@ -132,36 +136,55 @@ class DiscordInterface {
                 tempMessage.source = "Discord"; tempMessage.destination = "any";
                 tempMessage.title(`Socket`).beginFormatting().warn(`Received external error from ${cause}: ${message}`).endFormatting();
                 this.gwen.coreEmitter.emit("message", tempMessage);
-            })
+            });
         });
 
         client.on("messageCreate", async (message) => {
             if (message instanceof gateway.Message) {
-                if (message.content === "g!heeeey") {
-                    message.reply("sup");
+                // raven is a git
+                if (message.author.id == 718189714200330321) {
+                    return;
+                }
+
+                // Early process replies so that they don't have to be prefixed with "Gwen, "
+                const messageId = message.reference == null ? null : message.reference.messageId;
+                
+                const trimmedMessage = message.content.substr(message.content.indexOf(" ") + 1);
+                let replyMessage;
+                if (messageId) {
+                    replyMessage = await message.channel.messages.fetch(messageId);
+                }
+                
+                const extraData = {
+                    original: trimmedMessage,
+                    return: message,
+                    reply: replyMessage
+                }
+
+
+                // TODO: deduplicate
+                if(messageId) {
+                    if (replyMessage.author.id == this.client.user.id) {
+                        for(const conversation of this.conversations) {
+                            if(conversation.get("id") != messageId)
+                                continue;
+
+                            // set the ExtraData
+                            extraData.conversationID = conversation.get("conversation");
+                            // create an InterfaceMessage
+                            let tempMessage = new InterfaceMessage();
+                            tempMessage.source = "Discord"; tempMessage.destination = "console";
+                            tempMessage.title(`Discord`).beginFormatting().info(`Attempting to continue conversation ${conversation.get("conversation")} with ${message.author.tag}`).endFormatting();
+                            this.gwen.coreEmitter.emit("message", tempMessage);
+
+                            // Tell the ServerCore that we're ready
+                            this.socket.emit("reply", { client: "DiscordClient", value: trimmedMessage, extra: extraData });
+                        }
+                        return;
+                    }
                 }
 
                 if (message.content.startsWith("Guinevere, ") || message.content.startsWith("Gwen, ")) {
-                    // raven is a git
-                    if(message.author.id == 718189714200330321) {
-                        return;
-                    }
-                    
-                    const trimmedMessage = message.content.substr(message.content.indexOf(" ") + 1);
-
-                    const messageId = message.reference == null ? null : message.reference.messageId;
-                    let replyMessage;
-                    if (messageId) {
-                        replyMessage = await message.channel.messages.fetch(messageId);
-                    }
-
-                    const extraData = {
-                        original: trimmedMessage,
-                        return: message,
-                        reply: replyMessage
-                    }
-
-
                     let tempMessage = new InterfaceMessage();
                     tempMessage.source = "Discord"; tempMessage.destination = "console";
                     tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
@@ -170,6 +193,13 @@ class DiscordInterface {
                 }
             }
         });
+    }
+
+    removeConversation(data) {
+        this.conversations = this.conversations.filter(item => {
+            return item.get("id") != data.conversationID;
+        });
+        
     }
 
     /**
@@ -195,7 +225,8 @@ class DiscordInterface {
     replyToReturn(embed, extra) {
         this.client.channels.fetch(extra.return.channelId).then(channel =>
             channel.messages.fetch(extra.return.id).then(origMessage =>
-                origMessage.reply({ embeds: [embed] })
+                origMessage.reply({ embeds: [embed] }).then(message => 
+                    this.conversations.push(new Map().set("id", message.id).set("conversation", extra.conversationID)))
             ), err => console.log(err), err => console.log(err));
     }
 

@@ -37,7 +37,8 @@ class Brain {
     }
 
     talk(rawMessage, endConversation = false, extraData = null) {
-        // TODO: TTS
+        if(endConversation)
+            this.socket.emit("endConversation", extraData);
         this.socket.emit("answer", rawMessage, extraData);
     }
 
@@ -87,6 +88,8 @@ class Brain {
                     try {
                         fs.writeFileSync(queryCache, JSON.stringify(queryObj));
                         this.process = spawn(`pipenv run python ${__dirname}/../py/main.py ${queryCache}`, { shell: true });
+                        this.process.stdout.pipe(process.stdout);
+                        this.process.stderr.pipe(process.stderr);
                     } catch (err) {
                         let tempMessage = new InterfaceMessage();
                         tempMessage.source = "Brain"; tempMessage.destination = "console";
@@ -110,7 +113,7 @@ class Brain {
                             tempMessage.title(`Brain / ${packageName}`).beginFormatting().info(data.toString()).endFormatting();
                             this.emitter.emit("message", tempMessage);
 
-                            this.talk(obj.output.speech.toString());
+                            this.talk(obj.output.text.toString(), false, extraData);
                         } else {
                             segments += data;
                         }
@@ -130,6 +133,7 @@ class Brain {
                     if(this.output !== '') {
                         this.output = JSON.parse(this.output).output;
                         this.talk(this.output.text.toString(), true, extraData);
+                        this.emitter.emit("endConversation", extraData);
 
                         if(this.output.type == 'end' && this.output.options.synchronization && this.output.options.synchronization.enabled && this.output.options.synchronization.enabled == true) {
                             const sync = new Sync(this, query.classification, this.output.options.synchronization);
@@ -142,18 +146,6 @@ class Brain {
                     this.socket.emit("thinking", false, extraData);
                     resolve();
                 });
-
-                // Receiving "Loading .env environment variables..." through stderr.
-                // Seems to be harmless, this block does more harm than good.
-
-                /*this.process.stderr.on("data", (data) => {
-                    this.talk(`${this.parse("random_module_error", "", { '%module_name%': moduleName, '%package_name%': packageName })}: ${data}`);
-                    this.deleteQueryCache(queryCache);
-                    this.socket.emit("thinking", false, extraData);
-
-                    reject({ type: "error", object: new Error(data) });
-                });*/
-
                 this.process = { }
             }
         })
