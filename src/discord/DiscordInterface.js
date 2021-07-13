@@ -271,12 +271,14 @@ class DiscordInterface {
      */
 
     handleMessageFormatting(embed, message, extra) {
-        if(message.includes("<ul>")) {
+        if (message.includes("<ul>")) {
             let startOfList = message.indexOf("<ul>");
-            embed.fields.push({
-                name: "Response header:",
-                value: message.substr(0, startOfList)
-            });
+            if (message.substr(0, startOfList).length > 0) {
+                embed.fields.push({
+                    name: "Response header:",
+                    value: message.substr(0, startOfList)
+                });
+            }
             // Assume the list we're given is well formed. This is a silly idea.
             let endOfList = message.indexOf("</ul>");
 
@@ -294,10 +296,12 @@ class DiscordInterface {
                 });
             }
 
-            embed.fields.push({
-                name: "Response footer",
-                value: message.substr(endOfList + 5).length != 0 ? message.substr(endOfList + 5) : "Not present"
-            });
+            if (message.substr(endOfList + 5).length > 0) {
+                embed.fields.push({
+                    name: "Response footer",
+                    value: message.substr(endOfList + 5)
+                });
+            }
 
         } else {
             embed.fields.push({
