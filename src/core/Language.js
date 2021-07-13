@@ -232,7 +232,6 @@ class NLU {
             // Collate all the new entities
 
             let process = await this.nlp.process(lang, query, context);
-            console.log(process);
 
             const { entities, slotFill, srcAnswer } = process;
 

@@ -58,7 +58,6 @@ class Provider {
 
     async handleContextMessage(data, provider, socket, core) {
         for(let conversation of provider.conversations) {
-            console.log(conversation.get("id")), console.log(data.extra.conversationID);
             if(conversation.get("id") != data.extra.conversationID)
                 continue;
 
