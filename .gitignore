@@ -2,7 +2,8 @@ data/discord.json
 data/meta.json
 data/model.nlp
 package-lock.json
-
+Pipfile.lock
 
 
 node_modules
+*.pyc
