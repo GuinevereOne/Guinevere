@@ -104,7 +104,7 @@ class DiscordInterface {
 
             this.socket = io("http://localhost:" + this.gwen.corePort);
             this.socket.on("connect", () => this.socket.emit("init", "DiscordClient"));
-            this.socket.on("thinking", (newStatus, extra) => extra != null ? this.client.channels.fetch(extra.return.channelId).then(channel => newStatus ? channel.startTyping() : channel.stopTyping()) : null);
+            this.socket.on("thinking", (newStatus, extra) => extra != null ? this.client.channels.fetch(extra.return.channelId).then(channel => newStatus ? channel.startTyping() : channel.stopTyping(true)) : null);
 
 
             this.socket.on("answer", (message, extra) => {
