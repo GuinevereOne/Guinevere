@@ -84,7 +84,7 @@ class DiscordInterface {
             }
         });
 
-        core.coreEmitter.on("endConversation", data => this.removeConversation(data));
+        core.coreEmitter.on("endConversation", data => { this.removeConversation(data); this.resyncConversations(data); });
 
         client.on("ready", () => {
             this.ready = true;
