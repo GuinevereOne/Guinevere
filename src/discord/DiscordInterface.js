@@ -79,7 +79,7 @@ class DiscordInterface {
                 let tempMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message);
 
                 if (!this.ready) {
-                    this.transmissionBuffer.push(newMessage);
+                    this.transmissionBuffer.push(tempMessage);
                     return;
                 }
                 
