@@ -37,8 +37,10 @@ class Brain {
     }
 
     talk(rawMessage, endConversation = false, extraData = null) {
-        if(endConversation)
+        extraData.incomplete = !endConversation;
+        if(endConversation) {
             this.socket.emit("endConversation", extraData);
+        }
         this.socket.emit("answer", rawMessage, extraData);
     }
 
@@ -125,20 +127,16 @@ class Brain {
                 this.process.stdout.on("end", () => {
                     let tempMessage = new InterfaceMessage();
                     tempMessage.source = "brain"; tempMessage.destination = "console";
-                    tempMessage.title(`Brain / ${packageName}`).beginFormatting().info(segments).endFormatting();
+                    tempMessage.title(`Brain / ${packageName} / end`).beginFormatting().info(segments).endFormatting();
                     this.emitter.emit("message", tempMessage);
 
                     this.output = segments;
 
                     if(this.output !== '') {
+                        let flow = JSON.parse(this.output).flow;
+                        console.log("flow: " + flow);
                         this.output = JSON.parse(this.output).output;
-                        this.talk(this.output.text.toString(), this.output.flow, extraData);
-
-                        if(this.output.type == 'end' && this.output.options.synchronization && this.output.options.synchronization.enabled && this.output.options.synchronization.enabled == true) {
-                            const sync = new Sync(this, query.classification, this.output.options.synchronization);
-
-                            sync.synchronize((text) => this.talk(text));
-                        }
+                        this.talk(this.output.text.toString(), flow, extraData);
                     }
 
                     this.deleteQueryCache(queryCache);

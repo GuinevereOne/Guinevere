@@ -5,13 +5,20 @@ const { InterfaceMessage, coreTranslations } = require("../util/Logger");
 
 const { io } = require("socket.io-client")
 
+const fs = require("fs");
+
 const meta = require("../../data/discord");
+const { join } = require("path");
+const { StringUtils } = require("../util/String");
 
 class DiscordInterface {
 
     transmissionBuffer = [];
 
+    // Discord message ID -> Conversation ID
     conversations = [];
+    // Conversation ID -> [ List of Discord Messages ]
+    conversationMessages = [];
 
     ready = false;
 
@@ -108,13 +115,13 @@ class DiscordInterface {
 
 
             this.socket.on("answer", (message, extra) => {
+                console.log(extra);
                 let tempMessage = new InterfaceMessage();
                 tempMessage.source = "Discord"; tempMessage.destination = "console";
 
                 let embed = this.prepareEmbed(message, extra);
 
                 // I FUCKING HATE PROMISES
-                const destination = "";
                 if (extra == null) {
                     tempMessage.title(`Discord`).beginFormatting().info(`Sending response: "${message}" to home`).endFormatting();
                     this.gwen.coreEmitter.emit("message", tempMessage);
@@ -124,6 +131,9 @@ class DiscordInterface {
                         this.gwen.coreEmitter.emit("message", tempMessage);
                     }, err => console.log(err));
                 }
+
+                if(extra && !extra.incomplete)
+                    this.removeConversation(extra);
 
                 if (extra != null)
                     this.replyToReturn(embed, extra);
@@ -168,15 +178,26 @@ class DiscordInterface {
                             if(conversation.get("id") != messageId)
                                 continue;
 
-                            // set the ExtraData
-                            extraData.conversationID = conversation.get("conversation");
+                            /*
+                            Refuse to continue a conversation if the replier isn't the one who asked.
+                            if(!this.conversationMessages[0].get(conversation.get("conversation"))[0].author.id == message.author.id)
+                                continue;
+                            */
+
                             // create an InterfaceMessage
                             let tempMessage = new InterfaceMessage();
                             tempMessage.source = "Discord"; tempMessage.destination = "console";
                             tempMessage.title(`Discord`).beginFormatting().info(`Attempting to continue conversation ${conversation.get("conversation")} with ${message.author.tag}`).endFormatting();
                             this.gwen.coreEmitter.emit("message", tempMessage);
 
+                            
+                            // set the ExtraData
+                            extraData.conversationID = conversation.get("conversation");
+                            this.conversationMessages.forEach(item => item.get("id") == extraData.conversationID ? extraData.conversation = JSON.stringify(item.get("messages")) : null);
+
                             // Tell the ServerCore that we're ready
+                            this.setOrAddConversation(extraData, message);
+                            this.resyncConversations(extraData);
                             this.socket.emit("reply", { client: "DiscordClient", value: message.cleanContent, extra: extraData });
                         }
                         return;
@@ -189,6 +210,12 @@ class DiscordInterface {
                     tempMessage.source = "Discord"; tempMessage.destination = "console";
                     tempMessage.title(`Discord`).beginFormatting().info(`Recognized query: ${trimmedMessage}`).endFormatting();
                     this.gwen.coreEmitter.emit("message", tempMessage);
+                    // Begin a new conversation. If this is just a single command then it'll be removed.
+                    
+                    const conversationID = StringUtils.RandomString(15);
+                    extraData.conversationID = conversationID;
+                    this.setOrAddConversation(extraData, message);
+                    this.resyncConversations(extraData);
                     this.socket.emit("query", { client: "DiscordClient", value: trimmedMessage, extra: extraData });
                 }
             }
@@ -196,10 +223,35 @@ class DiscordInterface {
     }
 
     removeConversation(data) {
-        this.conversations = this.conversations.filter(item => {
-            return item.get("id") != data.conversationID;
-        });
-        
+        this.conversations = this.conversations.filter(item => 
+            item.get("id") != data.conversationID
+        );
+
+        fs.unlinkSync(join(__dirname + `../../../data/conversations/${data.conversationID}.json`));
+    }
+
+    setOrAddConversation(data, message) {
+        if (data.incomplete) {
+            this.conversations.forEach(item => item.get("conversation") == data.conversationID ? item.set("id", message.id) : null);
+            this.conversationMessages.forEach(item => {
+                if (item.get("id") == data.conversationID) {
+                    let list = item.get("messages");
+                    list.push(message);
+                    item.set("messages", list);
+                }
+            });
+        } else {
+            this.conversations.push(new Map().set("id", message.id).set("conversation", data.conversationID));
+            this.conversationMessages.push(new Map().set("id", data.conversationID).set("messages", [message]));
+        }
+    }
+
+    resyncConversations(data) {
+        // Rewrite the conversation to disk
+        for (const conversation of this.conversationMessages) {
+            if (conversation.get("id") == data.conversationID)
+                fs.writeFileSync(join(__dirname + `../../../data/conversations/${data.conversationID}.json`), JSON.stringify(conversation.get("messages")));
+        }
     }
 
     /**
@@ -225,9 +277,10 @@ class DiscordInterface {
     replyToReturn(embed, extra) {
         this.client.channels.fetch(extra.return.channelId).then(channel =>
             channel.messages.fetch(extra.return.id).then(origMessage =>
-                origMessage.reply({ embeds: [embed] }).then(message => 
-                    this.conversations.push(new Map().set("id", message.id).set("conversation", extra.conversationID)))
-            ), err => console.log(err), err => console.log(err));
+                origMessage.reply({ embeds: [embed] }).then(message => {
+                    this.setOrAddConversation(extra, message);
+                    this.resyncConversations(extra);
+                }), err => console.log(err), err => console.log(err)));
     }
 
     /**
@@ -247,6 +300,15 @@ class DiscordInterface {
                     confidence: 1
                 },
                 original: "Unknown"
+            };
+        
+        // TODO: figure out why this is possible.
+        if(extra.classification == undefined)
+            extra.classification = {
+                package: "unknown",
+                module: "unknown",
+                action: "unknown",
+                confidence: "unknown"
             };
         
         let embed = {

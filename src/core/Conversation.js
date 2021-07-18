@@ -44,13 +44,10 @@ class Conversation {
 
             let context = new MemoryConversationContext();
 
-            const conversationID = StringUtils.RandomString(15);
-            queryData.extra.conversationID = conversationID;
-
             socket.emit("thinking", true, queryData.extra);
             await this.nlu.process(queryData.value, context, queryData.extra);
 
-            this.conversations.push(new Map().set("id", conversationID).set("context", context));
+            this.conversations.push(new Map().set("id", queryData.extra.conversationID).set("context", context));
         });
 
         socket.on("reply", data => this.handleContextMessage(data, this, socket, core));
@@ -74,7 +71,10 @@ class Conversation {
             // Start thinking and process the reply
             socket.emit("thinking", true, data.extra);
             await provider.nlu.process(data.value, conversation.get("context"), data.extra);
+            return;
         }
+
+        socket.emit("answer", "You don't have any active conversations.", data);
     }
 }
 
